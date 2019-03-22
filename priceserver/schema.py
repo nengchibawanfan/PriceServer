@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*
 import graphene
 
-from FlaskWeb.PriceServer.price import schema
-from FlaskWeb.PriceServer import price
+from priceserver.price import schema
+from priceserver import price
 
 
 # 总的schema入口

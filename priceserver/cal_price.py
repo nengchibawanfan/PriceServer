@@ -5,9 +5,11 @@
 import sys
 from collections import deque
 
-sys.path.append("../..")
+from priceserver.conf.settings import CURRENCY_LIST
 
-from FlaskWeb.PriceServer.commen.db_connection import ConnectRedis
+sys.path.append("..")
+
+from priceserver.commen.db_connection import ConnectRedis
 
 r = ConnectRedis()
 
@@ -66,42 +68,45 @@ def get_total_graph(exchange):
     return symbols_graph
 
 
-def search(graph, start, end, path=[]):
-    # 创建搜索队列
-    search_queue = deque()
-    # 初始化搜索队列
-    path = path + [start]
-    search_queue += [start]
-    # 记录已经搜索过的node
-    searched = []
-    # 只要队列不空就一直搜索
-    next_paths = []
-    while search_queue:
-        # 取出队列中最先加进去的一个node
-        node = search_queue.popleft()
+def search(graph, start, mid, end, path=[]):
+    if mid in graph[end]:
+        return [start, mid, end]
+    else:
+        # 创建搜索队列
+        search_queue = deque()
+        # 初始化搜索队列
+        path = path + [start]
+        search_queue += [start]
+        # 记录已经搜索过的node
+        searched = []
+        # 只要队列不空就一直搜索
+        next_paths = []
+        while search_queue:
+            # 取出队列中最先加进去的一个node
+            node = search_queue.popleft()
 
-        if not node in searched:
-            # 查看是不是结束点
-            if next_paths:
-                for p in next_paths:
-                    if p[-1] == node:
-                        next_paths.remove(p)
-                        path = p
+            if not node in searched:
+                # 查看是不是结束点
+                if next_paths:
+                    for p in next_paths:
+                        if p[-1] == node:
+                            next_paths.remove(p)
+                            path = p
 
-            if node_is_end(node, end, path):
-                return path
-            else:
-                # 不是结束,所以将他的点都加入搜索队列
-                search_queue += graph[node]
-                # 标记这个点已经被搜索过了
-                searched.append(node)
-                # 把这个点和node拼接为路径
-                temp = []
-                for i in next_paths:
-                    for j in i:
-                        temp.append(j)
+                if node_is_end(node, end, path):
+                    return path
+                else:
+                    # 不是结束,所以将他的点都加入搜索队列
+                    search_queue += graph[node]
+                    # 标记这个点已经被搜索过了
+                    searched.append(node)
+                    # 把这个点和node拼接为路径
+                    temp = []
+                    for i in next_paths:
+                        for j in i:
+                            temp.append(j)
 
-                next_paths = next_paths + [path + [i] for i in graph[node] if i not in temp]
+                    next_paths = next_paths + [path + [i] for i in graph[node] if i not in temp]
 
     return False
 
@@ -126,10 +131,13 @@ def cal_price(exchange, path):
             symbols.append(symbol)
 
     key = "price_server_" + exchange
+
     dic = {}
-    for symbol in symbols[0: -1]:
+
+    for symbol in symbols:
         # 币币价格
         price = r.hget(key, symbol)
+        print(price)
         if price:
             dic[symbol] = price
         else:
@@ -143,34 +151,46 @@ def cal_price(exchange, path):
                     dic[symbol] = 1 / float(price)
             else:
                 dic[symbol] = 0
-    cu_price = r.hget("coinbase_currency_price", symbols[-1])
-    if cu_price:
-        dic[symbols[-1]] = cu_price
-    else:
-        dic[symbols[-1]] = 0
+
+    if path[-1] in CURRENCY_LIST:
+        cu_price = r.hget("coinbase_currency_price", symbols[-1])
+        if cu_price:
+            dic[symbols[-1]] = cu_price
+        else:
+            dic[symbols[-1]] = 0
 
     res = 1
     for i in dic.values():
         res *= float(i)
-
+    print(dic)
     return res
 
 
-def calculate_price(exchange, start, end):
-    total_graph = get_total_graph(exchange)
-    path = search(total_graph, start, end)
+def calculate_price(exchange, start, mid, end):
+    key = start + "_" + mid + "_" + end + "_" + exchange
+    path = r.hget("price_server_path", key)
+    # 从缓存中获取路径
+    if path:
+        pass
+    else:
+        # 缓存中没有，就计算路径并加入缓存
+        total_graph = get_total_graph(exchange)
+        path = search(total_graph, start, mid, end)
+        r.hset("price_server_path", key, path)
     price = cal_price(exchange, path)
-
     return price
 
 
 if __name__ == '__main__':
     # symbols = get_symbols_from_exchange("bytetrade")
     # total_graph = get_total_graph("huobipro")
-    total_graph = get_total_graph("bytetrade")
-    print(total_graph)
-    path = search(total_graph, "APPC", "CNY")
-    # price = cal_price("huobipro", path)
-    # price = calculate_price("huobipro", "MT", "CNY")
-    # print(price)
+    total_graph = get_total_graph("huobipro")
+    # print(total_graph)
+
+    path = search(total_graph, "KCASH", "BTC", "CNY")
+    print("path")
+    print(path)
+    price = cal_price("huobipro", path)
+# price = calculate_price("huobipro", "MT", "CNY")
+    print(price)
 #

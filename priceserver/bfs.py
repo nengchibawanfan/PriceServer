@@ -2,9 +2,7 @@
 import sys
 from collections import deque
 
-sys.path.append("../..")
-
-from FlaskWeb.PriceServer.commen.db_connection import ConnectRedis
+from priceserver.commen.db_connection import ConnectRedis
 
 r = ConnectRedis()
 

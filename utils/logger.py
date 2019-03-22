@@ -16,7 +16,9 @@ def error(self, msg, *args, **kwargs):
 
 
 # 设置logging
-def getLog(filename=os.path.basename(sys.argv[0])[0: -3], name='info'):
+def getLog(name='info'):
+    filename = os.path.basename(sys.argv[0])[0: -3]
+
     rootPath = os.path.realpath(os.path.split(__file__)[0] + '/../')
     os.makedirs(rootPath + '/logs/info', exist_ok=True)
     os.makedirs(rootPath + '/logs/stat', exist_ok=True)
