@@ -3,18 +3,18 @@
 # Date: 2019/3/15
 # Desc: 订阅各个交易所的成交价格，获取coin兑换法币的价格
 
-
-import sys
 import time
+import sys
 
 import redis
 import requests
 from retry import retry
 import multiprocessing.dummy
 
-sys.path.append("../..")
+sys.path.append("..")
+
 from wssExchange import bytetrade, huobipro
-from FlaskWeb.PriceServer.conf.settings import HUOBIPRO_API, COIN_BASE_URL, BYTETRADE_API, COIN_CURRENCY, CURRENCY_LIST
+from priceserver.conf.settings import HUOBIPRO_API, COIN_BASE_URL, BYTETRADE_API, COIN_CURRENCY, CURRENCY_LIST
 
 moneyLst = CURRENCY_LIST
 
@@ -136,8 +136,8 @@ class Quote(object):
         markets = [str(i["stockId"]) + "/" + str(i["moneyId"]) for i in res["symbols"] if i["money"] != "BTT"]  # "3/2"
         marketNames = [i["name"] for i in res["symbols"] if i["money"] != "BTT"]  # "CMT/KCASH"
         res_symbols = res["symbols"]
-        marketId_ccxtsymbol_mapping = {str(i["id"]): i["name"] for i in res["symbols"] if i["money"] != "BTT"}
-        return res_symbols, markets, marketNames, marketId_ccxtsymbol_mapping
+        coinId_ccxtsymbol_mapping = {str(i["id"]): i["name"] for i in res["symbols"] if i["money"] != "BTT"}
+        return res_symbols, markets, marketNames, coinId_ccxtsymbol_mapping
 
 
 if __name__ == '__main__':
