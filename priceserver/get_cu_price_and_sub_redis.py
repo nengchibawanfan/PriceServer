@@ -147,4 +147,4 @@ if __name__ == '__main__':
     q.subscribeAllTicker()  # 维护各个marketId的实时价格
     while True:
         q.start()  # 维护法币的价格
-        time.sleep(30)
+        time.sleep(60)

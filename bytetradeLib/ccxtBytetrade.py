@@ -619,7 +619,7 @@ class ccxtBytetrade(ccxt.Exchange):
 
 
         res = requests.post(self.pixiu_urlprex, data=pixiu_withdraw_json)
-        #logs.info(res.json())
+        #log.info(res.json())
         print(res.json())
 
         return {

@@ -137,7 +137,6 @@ def cal_price(exchange, path):
     for symbol in symbols:
         # 币币价格
         price = r.hget(key, symbol)
-        print(price)
         if price:
             dic[symbol] = price
         else:
@@ -162,7 +161,6 @@ def cal_price(exchange, path):
     res = 1
     for i in dic.values():
         res *= float(i)
-    print(dic)
     return res
 
 
@@ -171,12 +169,12 @@ def calculate_price(exchange, start, mid, end):
     path = r.hget("price_server_path", key)
     # 从缓存中获取路径
     if path:
-        pass
+        path = eval(path)
     else:
         # 缓存中没有，就计算路径并加入缓存
         total_graph = get_total_graph(exchange)
         path = search(total_graph, start, mid, end)
-        r.hset("price_server_path", key, path)
+        r.hset("price_server_path", key, str(path))
     price = cal_price(exchange, path)
     return price
 

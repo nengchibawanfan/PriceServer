@@ -12,7 +12,7 @@ class Price(graphene.ObjectType):
 
 
 class Symbol(graphene.ObjectType):
-    symbol = graphene.String()
+    symbol_name = graphene.String()
     price = graphene.List(Price)
 
 
@@ -25,78 +25,48 @@ class Info(graphene.ObjectType):
     # info = graphene.List(Exchange)
     info = graphene.List(Exchange)
 
+def fetch_info():
+    pass
 
-response = {
-    "info": [
-        {
-            "exchange_name": "huobipro",
-            "coin_list": [{"coin_name": "MT/ETH",
-                           "price": [{
-                               "currency": "CNY",
-                               "price": 1000
-                           },
-                               {
-                                   "currency": "USD",
-                                   "price": 1000
-                               }]},
-                          {"coin_name": "MT/BTC",
-                           "price": [{
-                               "currency": "CNY",
-                               "price": 1000
-                           },
-                               {
-                                   "currency": "USD",
-                                   "price": 1000
-                               }]}
-                          ],
-        },
-        {
-            "exchange_name": "bytetrade",
-            "coin_list": [{"coin_name": "MT/ETH",
-                           "price": [{
-                               "currency": "CNY",
-                               "price": 1000
-                           },
-                               {
-                                   "currency": "USD",
-                                   "price": 1000
-                               }]},
+def  fetch_exchange_by_exchange_name(exchange_name):
+    pass
 
-                          {"coin_name": "MT/ETH",
-                           "price": [{
-                               "currency": "CNY",
-                               "price": 1000
-                           },
-                               {
-                                   "currency": "USD",
-                                   "price": 1000
-                               }]}
-                          ],
+def fetch_symbol_by_ccxt_symbol(symbol):
+    pass
 
-        },
-        {
-            "exchange_name": "okex",
-            "coin_list": [{"coin_name": "MT/ETH",
-                           "price": [{
-                               "currency": "CNY",
-                               "price": 1000
-                           },
-                               {
-                                   "currency": "USD",
-                                   "price": 1000
-                               }]},
-                          {"coin_name": "MT/ETH",
-                           "price": [{
-                               "currency": "CNY",
-                               "price": 1000
-                           },
-                               {
-                                   "currency": "USD",
-                                   "price": 1000
-                               }]}
-                          ],
-        }]
-}
+def fetch_price(currency, symbol):
+    pass
+
+
+def _exchange(exchange_name=None):
+    if exchange_name:
+        # 解析exhangename
+        exchange_name = [exchange_name]
+    else:
+        exchange_name = ["huobipro", "bytetrade", "okex"]
+
+    for exchange in exchange_name:
+        obj = Exchange(exchange_name=exchange_name,
+                       coin_list=[_symbol(symbol_name=symbol_name, exchange_name=exchange) for
+                                  symbol_name in ["MT/ETH", "KCASH/ETH"]]
+                       )
+        return obj
+
+def _symbol(symbol_name, exchange_name):
+    obj = Symbol(symbol_name=symbol_name,
+                 price=[_price(currency=currency, symbol_name=symbol_name,
+                                            exchange_name=exchange_name) for currency in ["CNY", "USD"]])
+
+    return obj
+
+def _price(currency, symbol_name, exchange_name):
+
+    start, mid = symbol_name.split("/")
+    end = currency
+    price = calculate_price(exchange_name, start, mid, end)
+
+    return Price(currency=currency, price=price)
+
 
 
 # 定义查询接口，类似于 GET
@@ -111,14 +81,14 @@ class Query(graphene.ObjectType):
     info = graphene.Field(Info)
     exchange = graphene.List(Exchange)
     symbol = graphene.List(Symbol)
-    price = graphene.List(Price)
+    price = graphene.Field(Price)
 
     def resolve_info(self, info, *args, **kwargs):
-        # obj = Info(
-        #     info=[self.resolve_exchange(info, exchange_name=exchange_name) for exchange_name in
-        #           ["huobipro", "bytetrade"]]
-        # )
-        obj = Info()
+        obj = Info(
+            info=[_exchange(exchange_name=exchange_name) for exchange_name in
+                  ["huobipro", "bytetrade"]]
+        )
+        # obj = Info()
         #
         return obj
 
@@ -143,7 +113,8 @@ class Query(graphene.ObjectType):
 
         return obj
 
-    def resolve_price(self, info, currency, symbol_name, exchange_name):
+    def resolve_price(self, info, currency="CNY", symbol_name="MT/ETH", exchange_name="bytetrade"):
+
         start, mid = symbol_name.split("/")
         end = currency
         price = calculate_price(exchange_name, start, mid, end)
