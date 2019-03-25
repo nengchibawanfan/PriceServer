@@ -11,12 +11,14 @@ import requests
 from retry import retry
 import multiprocessing.dummy
 
-sys.path.append("..")
 
+sys.path.append("..")
 from wssExchange import bytetrade, huobipro
+from priceserver.commen.logger import getLog
 from priceserver.conf.settings import HUOBIPRO_API, COIN_BASE_URL, BYTETRADE_API, COIN_CURRENCY, CURRENCY_LIST
 
 moneyLst = CURRENCY_LIST
+logger = getLog()
 
 
 class Quote(object):
@@ -31,7 +33,7 @@ class Quote(object):
         self.response_symbols, self.markets, self.marketNames, self.marketId_ccxtsymbol_mapping = self.getMarketIds()
 
     def get_commen_symbols(self):
-        print("获取共同交易对")
+        logger.info("获取共同交易对")
         url = HUOBIPRO_API + "v1/common/symbols"
         res = eval(requests.get(url).content.decode("utf-8"))
         huobi_symbols = set([i["base-currency"].upper() + "/" + i["quote-currency"].upper() for i in res["data"]])
@@ -85,7 +87,7 @@ class Quote(object):
         维持quote字典最新
         :return:
         """
-        print("更新法币价格")
+        logger.info("更新法币价格")
         for base in moneyLst:
             # 所有的法币名称
             self.pool.apply_async(self.updateQuote, (base,))
@@ -121,15 +123,15 @@ class Quote(object):
         """
         self.bt.start()
         self.bt.subscribeTicker(self.markets, self.onTicker_bytetrade)
-        print("订阅bytetrade各个交易对成交价格")
+        logger.info("订阅bytetrade各个交易对成交价格")
         # 订阅我们有的火币也有的交易对
         self.hb.start()
         for symbol in self.get_commen_symbols():
             self.hb.subscribeDeals(symbol, self.onDeal_huobipro)
-        print("订阅火币各个交易对成交价格")
+        logger.info("订阅火币各个交易对成交价格")
 
     def getMarketIds(self):
-        print("正在获取Market，MarketName，marketId与ccxtSymbol映射等信息")
+        logger.info("正在获取Market，MarketName，marketId与ccxtSymbol映射等信息")
         url = BYTETRADE_API + "?cmd=markets"
         res = eval(requests.get(url).content.decode("utf-8"))
 
