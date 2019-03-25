@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
 # Author: zhangchao
 # Date: 2019/3/14
-# Desc: 获取各个交易所的symbol的图
+# Desc: 获取各个交易所的symbol的图并计算路径
 import sys
-from collections import deque
 
-from priceserver.conf.settings import CURRENCY_LIST
+from collections import deque
 
 sys.path.append("..")
 
+from priceserver.commen.logger import getLog
+from priceserver.conf.settings import CURRENCY_LIST
 from priceserver.commen.db_connection import ConnectRedis
 
 r = ConnectRedis()
+logger = getLog()
 
 
 def get_symbols_from_exchange(exchange_name):
@@ -162,6 +164,7 @@ def cal_price(exchange, path):
         for i in dic.values():
             res *= float(i)
     else:
+        logger.info("交易对没有路径，返回价格为0")
         res = 0
     return res
 
@@ -191,6 +194,6 @@ if __name__ == '__main__':
     print("path")
     print(path)
     price = cal_price("huobipro", path)
-# price = calculate_price("huobipro", "MT", "CNY")
+    # price = calculate_price("huobipro", "MT", "CNY")
     print(price)
 #
