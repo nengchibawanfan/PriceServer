@@ -15,7 +15,9 @@ worker_class = "gevent"
 
 # 设置最大并发量
 worker_connections = 1000
-daemon = True
+# 守护进程方式运行，后台
+daemon = False
+
 debug = True
 proc_name = 'new_price_server'
 

@@ -5,13 +5,12 @@ import arrow
 from decimal import *
 import ccxt
 
-from utils.logger import *
+from priceserver.commen.logger import *
 
 log = getLog('stat')
 logError = getLog('error')
 from ccxt.base.errors import *
 from bytetradeLib.bytetradelib import *
-from web3 import Web3
 import requests
 
 curDir = os.path.dirname(__file__)
