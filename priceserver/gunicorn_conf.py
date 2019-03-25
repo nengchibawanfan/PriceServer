@@ -1,7 +1,7 @@
 import multiprocessing
 
 # 监听内网端口5000
-bind = '127.0.0.1:5000'
+bind = '0.0.0.0:5000'
 backlog = 2048
 
 # 并行工作进程数
@@ -15,7 +15,7 @@ worker_class = "gevent"
 
 # 设置最大并发量
 worker_connections = 1000
-daemon = False
+daemon = True
 debug = True
 proc_name = 'new_price_server'
 
