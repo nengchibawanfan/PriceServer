@@ -121,46 +121,48 @@ def node_is_end(node, end, path):
 
 def cal_price(exchange, path):
     # 拼接成交易对
-
-    symbols = []
-    for i in range(len(path)):
-        if i + 1 == len(path):
-            pass
-        else:
-            symbol = path[i] + "/" + path[i + 1]
-            symbols.append(symbol)
-
-    key = "price_server_" + exchange
-
-    dic = {}
-
-    for symbol in symbols:
-        # 币币价格
-        price = r.hget(key, symbol)
-        if price:
-            dic[symbol] = price
-        else:
-            t1, t2 = symbol.split("/")
-            reverse_symbol = t2 + "/" + t1
-            price = r.hget(key, reverse_symbol)
-            if price:
-                if float(price) == 0:
-                    dic[symbol] = 0
-                else:
-                    dic[symbol] = 1 / float(price)
+    if path:
+        symbols = []
+        for i in range(len(path)):
+            if i + 1 == len(path):
+                pass
             else:
-                dic[symbol] = 0
+                symbol = path[i] + "/" + path[i + 1]
+                symbols.append(symbol)
 
-    if path[-1] in CURRENCY_LIST:
-        cu_price = r.hget("coinbase_currency_price", symbols[-1])
-        if cu_price:
-            dic[symbols[-1]] = cu_price
-        else:
-            dic[symbols[-1]] = 0
+        key = "price_server_" + exchange
 
-    res = 1
-    for i in dic.values():
-        res *= float(i)
+        dic = {}
+
+        for symbol in symbols:
+            # 币币价格
+            price = r.hget(key, symbol)
+            if price:
+                dic[symbol] = price
+            else:
+                t1, t2 = symbol.split("/")
+                reverse_symbol = t2 + "/" + t1
+                price = r.hget(key, reverse_symbol)
+                if price:
+                    if float(price) == 0:
+                        dic[symbol] = 0
+                    else:
+                        dic[symbol] = 1 / float(price)
+                else:
+                    dic[symbol] = 0
+
+        if path[-1] in CURRENCY_LIST:
+            cu_price = r.hget("coinbase_currency_price", symbols[-1])
+            if cu_price:
+                dic[symbols[-1]] = cu_price
+            else:
+                dic[symbols[-1]] = 0
+
+        res = 1
+        for i in dic.values():
+            res *= float(i)
+    else:
+        res = 0
     return res
 
 

@@ -1,10 +1,10 @@
 import graphene
 
 from priceserver.cal_price import calculate_price
+from priceserver.conf.settings import EXCHANGE_LIST, SYMBOL_LIST, CURRENCY_LIST
 from utils.logger import getLog
 
 logger = getLog()
-
 
 class Price(graphene.ObjectType):
     currency = graphene.String()
@@ -25,42 +25,38 @@ class Info(graphene.ObjectType):
     # info = graphene.List(Exchange)
     info = graphene.List(Exchange)
 
-def fetch_info():
-    pass
 
-def  fetch_exchange_by_exchange_name(exchange_name):
-    pass
+def _exchange(exchange_name, symbol, currency):
 
-def fetch_symbol_by_ccxt_symbol(symbol):
-    pass
-
-def fetch_price(currency, symbol):
-    pass
-
-
-def _exchange(exchange_name=None):
-    if exchange_name:
-        # 解析exhangename
-        exchange_name = [exchange_name]
+    if symbol:
+        temp = symbol.split(",")
+        symbol_list = [i.replace(" ", "") for i in temp]
     else:
-        exchange_name = ["huobipro", "bytetrade", "okex"]
+        symbol_list = SYMBOL_LIST
 
-    for exchange in exchange_name:
-        obj = Exchange(exchange_name=exchange_name,
-                       coin_list=[_symbol(symbol_name=symbol_name, exchange_name=exchange) for
-                                  symbol_name in ["MT/ETH", "KCASH/ETH"]]
-                       )
-        return obj
+    obj = Exchange(exchange_name=exchange_name,
+                   coin_list=[_symbol(symbol_name=symbol_name, exchange_name=exchange_name, currency=currency) for
+                              symbol_name in symbol_list]
+                   )
+    return obj
 
-def _symbol(symbol_name, exchange_name):
+
+def _symbol(symbol_name, exchange_name, currency):
+    if currency:
+        temp = currency.split(",")
+        currency_list = [i.replace(" ", "") for i in temp]
+    else:
+        currency_list = CURRENCY_LIST
+
     obj = Symbol(symbol_name=symbol_name,
-                 price=[_price(currency=currency, symbol_name=symbol_name,
-                                            exchange_name=exchange_name) for currency in ["CNY", "USD"]])
+                 price=[_price(currency=cu, symbol_name=symbol_name,
+                               exchange_name=exchange_name) for cu in currency_list])
 
     return obj
 
-def _price(currency, symbol_name, exchange_name):
 
+def _price(currency, symbol_name, exchange_name):
+    print(currency, symbol_name, exchange_name)
     start, mid = symbol_name.split("/")
     end = currency
     price = calculate_price(exchange_name, start, mid, end)
@@ -68,58 +64,40 @@ def _price(currency, symbol_name, exchange_name):
     return Price(currency=currency, price=price)
 
 
-
 # 定义查询接口，类似于 GET
 class Query(graphene.ObjectType):
     hello = graphene.String()
 
     def resolve_hello(self, info, **kwargs):
+
         return "THIS IS PRICE_SERVER"
 
     # 查询接口以及必须的参数
     # graphene.String(required=True)
-    info = graphene.Field(Info)
-    exchange = graphene.List(Exchange)
-    symbol = graphene.List(Symbol)
-    price = graphene.Field(Price)
+    price_server = graphene.Field(Info, exchange_name=graphene.String(),
+                                  symbol=graphene.String(),
+                                  currency=graphene.String())
 
-    def resolve_info(self, info, *args, **kwargs):
+    # exchange = graphene.List(Exchange)
+    # symbol = graphene.List(Symbol)
+    # price = graphene.Field(Price)
+
+    def resolve_price_server(self, info, exchange_name=None, symbol=None, currency=None):
+
+        if exchange_name:
+            temp = exchange_name.split(",")
+            exchange_list = [i.replace(" ", "") for i in temp]
+
+        else:
+            exchange_list = EXCHANGE_LIST
+
         obj = Info(
-            info=[_exchange(exchange_name=exchange_name) for exchange_name in
-                  ["huobipro", "bytetrade"]]
+            info=[_exchange(exchange_name=ex, symbol=symbol, currency=currency) for ex in
+                  exchange_list]
         )
-        # obj = Info()
-        #
-        return obj
-
-    def resolve_exchange(self, info, exchange_name=None):
-        # if exchange_name:
-        #     # 解析exhangename
-        #     exchange_name = [exchange_name]
-        # else:
-        #     exchange_name = ["huobipro", "bytetrade", "okex"]
-
-        for exchange in exchange_name:
-            obj = Exchange(exchange_name=exchange_name,
-                           coin_list=[self.resolve_symbol(info, symbol_name=symbol_name, exchange_name=exchange_name) for
-                                      symbol_name in ["MT/ETH", "KCASH/ETH"]]
-                           )
-            return obj
-
-    def resolve_symbol(self, info, symbol_name, exchange_name):
-        obj = Symbol(symbol_name=symbol_name,
-                     price=[self.resolve_price(info, currency=currency, symbol_name=symbol_name,
-                                               exchange_name=exchange_name) for currency in ["CNY", "USD"]])
 
         return obj
 
-    def resolve_price(self, info, currency="CNY", symbol_name="MT/ETH", exchange_name="bytetrade"):
-
-        start, mid = symbol_name.split("/")
-        end = currency
-        price = calculate_price(exchange_name, start, mid, end)
-
-        return Price(currency=currency, price=price)
 
 
 if __name__ == '__main__':
