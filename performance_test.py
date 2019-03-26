@@ -45,4 +45,5 @@ class WebsiteUser(HttpLocust):
     max_wait = 9000
 
 if __name__ == '__main__':
+    # locust -f performance_test.py --host=http://18.179.204.45:5000
     pass
