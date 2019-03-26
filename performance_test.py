@@ -1,37 +1,48 @@
 from locust import HttpLocust, TaskSet, task
 
-from gql import Client, gql
-from gql.transport.requests import RequestsHTTPTransport
-
-
-class MyTaskSet(TaskSet):
-
+class UserBehavior(TaskSet):
 
     @task(1)
     def graphql(self):
-        query = gql('''
-        {
-          priceServer{
-            info {
-              exchangeName
-              coinList {
-                symbolName
-                price {
-                  currency
-                  price
-                }
-              }
-            }
-          }
+        # params = {'query': '''{
+        #   priceServer{
+        #     info {
+        #       exchangeName
+        #       coinList {
+        #         symbolName
+        #         price {
+        #           currency
+        #           price
+        #         }
+        #       }
+        #     }
+        #   }
+        # }'''}
+
+        params = {'query': '''{
+  priceServer(exchangeName: "bytetrade", currency: "CNY",  symbol: "CMT/ETH"){
+    info {
+      exchangeName
+      coinList {
+        symbolName
+        price {
+          currency
+          price
         }
-            ''')
-        # self.client1.execute(query)
-        res = self.client.execute(query)
-        print(res)
+      }
+    }
+  }
+}'''}
+
+        self.client.post("/graphql", params=params)
+        # assert r.state_code == 200
 
 
-class MyLocust(HttpLocust):
-    task_set = MyTaskSet
+class WebsiteUser(HttpLocust):
+    # host = "http://18.179.204.45:5000"
+    task_set = UserBehavior
     min_wait = 5000
-    max_wait = 15000
+    max_wait = 9000
 
+if __name__ == '__main__':
+    pass
