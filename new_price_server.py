@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*
-import sys
-
 from flask import Flask
 from flask_graphql import GraphQLView
 from werkzeug.contrib.fixers import ProxyFix
 
-sys.path.append("..")
 from priceserver.schema import schema
 
 app = Flask(__name__)

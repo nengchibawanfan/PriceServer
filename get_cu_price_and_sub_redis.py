@@ -2,17 +2,13 @@
 # Author: zhangchao
 # Date: 2019/3/15
 # Desc: 订阅各个交易所的成交价格，获取coin兑换法币的价格
-
 import time
-import sys
 
 import redis
 import requests
 from retry import retry
 import multiprocessing.dummy
 
-
-sys.path.append("..")
 from wssExchange import bytetrade, huobipro
 from priceserver.commen.logger import getLog
 from priceserver.conf.settings import HUOBIPRO_API, COIN_BASE_URL, BYTETRADE_API, COIN_CURRENCY, CURRENCY_LIST
