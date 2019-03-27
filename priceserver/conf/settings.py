@@ -20,19 +20,19 @@ def get_symbol_list():
 
     return list(commen_symbol)
 
+# redis
+REDIS_HOST='127.0.0.1'
+REDIS_PORT=6379
+
 
 SYMBOL_LIST = get_symbol_list()
 # 默认的交易对的列表，就是 我们交易所支持的所有的币对
 
-
 EXCHANGE_LIST = ["huobipro", "bytetrade"]
 # 支持的交易所
 
-CURRENCY_LIST = ["CNY",     "USD",
-            # 人民币     美元
-            "GBP", "SGD", "HKD", "JPY", "CAD", "AUD",      "EUR", "THB", "NZD", "KRW", "RUB",        "MYR"
-            # 英镑  新加坡元  港币  日元    还拿大元  澳大利亚元   欧元  泰铢   新西兰元  韩元  俄罗罗罗罗斯  马来西亚林吉特
-            ]
+CURRENCY_LIST = ["CNY",     "USD","GBP", "SGD", "HKD", "JPY", "CAD", "AUD",      "EUR", "THB", "NZD", "KRW", "RUB",        "MYR"      ]
+                 # 人民币     美元 英镑  新加坡元  港币  日元    还拿大元  澳大利亚元   欧元  泰铢   新西兰元  韩元  俄罗罗罗罗斯  马来西亚林吉特
 
 COIN_CURRENCY = ["BTC", "ETH"]
 # 保存的兑法币价格的币种   在订阅中的设置
