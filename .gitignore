@@ -12,6 +12,7 @@ develop-eggs/
 dist/
 downloads/
 eggs/
+logs/
 .eggs/
 lib/
 lib64/
@@ -51,6 +52,7 @@ coverage.xml
 *.pot
 
 # Django stuff:
+*.log
 local_settings.py
 db.sqlite3
 
