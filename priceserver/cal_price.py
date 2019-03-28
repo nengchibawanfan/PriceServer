@@ -8,9 +8,9 @@ from collections import deque
 
 sys.path.append("..")
 
-from priceserver.commen.logger import getLog
+from priceserver.common.logger import getLog
 from priceserver.conf.settings import CURRENCY_LIST
-from priceserver.commen.db_connection import ConnectRedis
+from priceserver.common.db_connection import ConnectRedis
 
 r = ConnectRedis()
 logger = getLog()

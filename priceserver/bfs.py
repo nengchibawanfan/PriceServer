@@ -2,7 +2,7 @@
 import sys
 from collections import deque
 
-from priceserver.commen.db_connection import ConnectRedis
+from priceserver.common.db_connection import ConnectRedis
 
 r = ConnectRedis()
 

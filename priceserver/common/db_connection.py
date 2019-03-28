@@ -1,9 +1,6 @@
 import redis
 import threading
 
-from priceserver.conf.settings import REDIS_HOST, REDIS_PORT
-
-
 class ConnectRedis(object):
     _instance_lock = threading.Lock()
 
@@ -14,5 +11,9 @@ class ConnectRedis(object):
         if not hasattr(ConnectRedis, "r"):
             with ConnectRedis._instance_lock:
                 if not hasattr(ConnectRedis, "r"):
-                    ConnectRedis.r = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+                    ConnectRedis.r = redis.StrictRedis(host="127.0.0.1", port=6379, decode_responses=True)
         return ConnectRedis.r
+
+if __name__ == '__main__':
+    r = ConnectRedis()
+    print(r)

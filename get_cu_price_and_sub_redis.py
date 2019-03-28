@@ -10,7 +10,7 @@ from retry import retry
 import multiprocessing.dummy
 
 from wssExchange import bytetrade, huobipro
-from priceserver.commen.logger import getLog
+from priceserver.common.logger import getLog
 from priceserver.conf.settings import HUOBIPRO_API, COIN_BASE_URL, BYTETRADE_API, COIN_CURRENCY, CURRENCY_LIST
 
 moneyLst = CURRENCY_LIST

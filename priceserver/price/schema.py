@@ -2,7 +2,7 @@ import graphene
 
 from priceserver.cal_price import calculate_price
 from priceserver.conf.settings import EXCHANGE_LIST, SYMBOL_LIST, CURRENCY_LIST
-from priceserver.commen.logger import getLog
+from priceserver.common.logger import getLog
 
 logger = getLog()
 

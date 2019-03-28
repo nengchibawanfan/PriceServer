@@ -1,4 +1,4 @@
-from priceserver.commen.db_connection import ConnectRedis
+from priceserver.common.db_connection import ConnectRedis
 
 HUOBIPRO_API = "https://api.huobi.pro/"
 BYTETRADE_API = "https://api.bytetrade.io/bittrade/v1/me"

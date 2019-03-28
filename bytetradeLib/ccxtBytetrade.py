@@ -5,7 +5,7 @@ import arrow
 from decimal import *
 import ccxt
 
-from priceserver.commen.logger import *
+from priceserver.common.logger import *
 
 log = getLog('stat')
 logError = getLog('error')
