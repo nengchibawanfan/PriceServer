@@ -4,6 +4,7 @@ HUOBIPRO_API = "https://api.huobi.pro/"
 BYTETRADE_API = "https://api.bytetrade.io/bittrade/v1/me"
 BYTETRADE_TEST_API = "https://c2.bytetrade.io/bittrade/v1/me"
 COIN_BASE_URL = "https://api.coinbase.com/"
+PUSH_BEAR_KEY = "11970-ba5f3d1644a4bd880a04ebdef3560f69"
 
 
 def get_symbol_list():
