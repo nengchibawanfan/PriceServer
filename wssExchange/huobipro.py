@@ -86,14 +86,14 @@ class huobiproTemp(BaseWss, ccxt.huobipro):
             # 成交
             for b in balances:
                 info = {}
-                info["currency"] = b["currency"]
+                info["currency"] = b["currency"].upper()
                 info["total"] = b["balance"]
                 res.append(info)
         else:
             # 没成交
             for b in balances:
                 info = {}
-                info["currency"] = b["currency"]
+                info["currency"] = b["currency"].upper()
                 info["free"] = b["balance"]
                 res.append(info)
         result = {'info': response}
@@ -320,11 +320,12 @@ if __name__ == '__main__':
     #                     "secret": "7fed2c88-bf6981ff-11a0ef5e-907f4",
     #                     "wssUrl": HUOBI_WSS_TRADE})
 
-    wss = huobipro({"apiKey": "6892475f-308e2f26-163666db-0e387",
-                    "secret": "7fed2c88-bf6981ff-11a0ef5e-907f4", })
-
-    wss.start()
-    wss.subscribeBalance(onBalance=onDepth)
+    wss = huobipro()
+    b = wss.fetch_markets()
+    for i in b:
+        print(i['symbol'],i['precision'])
+    # wss.start()
+    # wss.subscribeTicker('BTC/USDT',onDepth)
     # wss1.start()
     # wss2.start()
     # wss.signServer()

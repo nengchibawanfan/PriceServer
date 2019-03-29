@@ -3,32 +3,31 @@ from wssExchange.base.basewss import *
 from bytetradeLib.ccxtBytetrade import ccxtBytetrade
 import arrow
 
-TEST = False
+TEST = True
 # 常量定义
+# BYTETRADE_WSS = 'wss://p2.bytetrade.io/ws/'
+# BYTETRADE_API = 'http://p2.bytetrade.io/bittrade/v1/me'
+# BYTETRADE_WSS = 'ws://13.56.53.82:8008/ws/'
+# BYTETRADE_API = 'http://13.56.53.82:6081/bittrade/v1/me'
+# BYTETRADE_WSS = 'ws://54.67.14.158:8008/'
+# BYTETRADE_API = 'http://54.67.14.158:6081/bittrade/v1/me'
 if TEST:
-    BYTETRADE_WSS = 'wss://c7.bytetrade.io/ws/'
-    BYTETRADE_API = 'https://c7.bytetrade.io/bittrade/v1/me'
+    BYTETRADE_WSS = 'wss://c2.bytetrade.io/ws/'
+    BYTETRADE_API = 'https://c2.bytetrade.io/bittrade/v1/me'
 else:
-    BYTETRADE_WSS = 'wss://p7.bytetrade.io/ws/'
-    BYTETRADE_API = 'https://p7.bytetrade.io/bittrade/v1/me'
+    BYTETRADE_WSS = 'wss://p7.bytetrade.com/ws/'
+    BYTETRADE_API = 'https://p7.bytetrade.com/bittrade/v1/me'
 
 
 ########################################################################
 class bytetrade(BaseWss, ccxtBytetrade):
     def __init__(self, config={}):
-
-        if(not "apiUrl" in config):
-            config.update({'apiUrl': BYTETRADE_API})
+        config.update({'apiUrl': BYTETRADE_API})
         ccxtBytetrade.__init__(self, config)
         BaseWss.__init__(self, config)
         self.subId = 0
-        self.depthData ={}
-        if(not "wssUrl" in config):
-            self.wssUrl = BYTETRADE_WSS
-        else:
-            self.wssUrl = config["wssUrl"]
-
-
+        self.depthData = {}
+        self.wssUrl = BYTETRADE_WSS
 
     def onHeartBeat(self):
         """响应心跳"""
@@ -360,24 +359,26 @@ if __name__ == '__main__':
         # for i in range(0,len(orderbook['bids'])):
         #     if orderbook['bids'][i]!=data['bids'][i]:
         #         print(f'bids error: index{i} {orderbook["bids"][i]} {arrow.get(orderbook["timestamp"])} {data["bids"][i]} {arrow.get(data["timestamp"])}')
-        time.sleep(10)
+        # time.sleep(10)
         print("depth: ", symbol, data)
 
     def onTicker(symbol, data):
         print("ticker: ",symbol,data)
     wss = bytetrade({
-        'apiKey': 'codj_8621',
+        'apiKey': 'heybrit',
         'secret': '',
     })
+    # orders = wss.fetch_open_orders('3/2')
+    # for o in orders:
+    #     wss.cancel_order(o['id'],o['symbol'])
+    # for i in range(0,60):
+    #     wss.create_order('3/2','limit','buy',10000,0.0001)
+    #     time.sleep(5)
     wss.start()
-    wss.subscribeDepth('14/2', onDepth)
-    wss.subscribeDepth('18/2', onDepth)
-    wss.subscribeDepth('22/31', onDepth)
-
-    # wss.subscribeBalance([i for i in range(0, 50)], onDepth)
-    # wss.subscribeOrders('35/2',onTicker)
-    # while True:
-    #     pass
+    wss.subscribeBalance([i for i in range(0,50)], onDepth)
+    wss.subscribeOrders('18/2',onTicker)
+    while True:
+        pass
     # print(wss.fetch_order_book('BTC/LRT'))
     # wss.subscribeBalance(1,onDepth)
     # while True:

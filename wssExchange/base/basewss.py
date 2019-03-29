@@ -4,25 +4,16 @@ import json
 import sys
 import time
 import hashlib
-import arrow
-from datetime import datetime
-import websocket
 import traceback
-from wssExchange.base.basesub import BaseSub
-from retrying import retry
+from datetime import datetime
 from threading import Lock, Thread
 
-import logging
-logErr = logging.getLogger()
-logErr.setLevel(level = logging.INFO)
-handler = logging.FileHandler("./wss.logs")
-handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s -%(lineno)d - %(message)s')
-handler.setFormatter(formatter)
-console = logging.StreamHandler()
-console.setLevel(logging.INFO)
-logErr.addHandler(handler)
-logErr.addHandler(console)
+import websocket
+from retrying import retry
+from priceserver.common.logger import getLog
+from wssExchange.base.basesub import BaseSub
+
+logErr = getLog('error')
 
 # 常量定义
 class BaseWss(BaseSub):
@@ -45,7 +36,8 @@ class BaseWss(BaseSub):
         self._lastReceivedText=None
 
         self._onConnected=None
-        self._lastCallback=0
+        self._noDataWait = config.get('noDataWait')
+        self._lastCallback=time.time()
         super().__init__()
 
     # ----------------------------------------------------------------------
@@ -83,8 +75,10 @@ class BaseWss(BaseSub):
         等待所有工作线程退出
         正确调用方式：先stop()后join()
         """
-        self._daemonThread.join()
-        self._workerThread.join()
+        if self._daemonThread:
+            self._daemonThread.join()
+        if self._workerThread:
+            self._workerThread.join()
 
     # ----------------------------------------------------------------------
     def sendJson(self,dictObj):  # type: (dict)->None
@@ -110,6 +104,7 @@ class BaseWss(BaseSub):
             logErr.info('%s 重连websocket %s'%(self.__class__.__name__,self.wssUrl))
             self._disconnect()
             self._connect()
+            self.resubscribe()
             return True
         except Exception as e:
             logErr.error(f'行情服务器重连失败：{e}')
@@ -170,7 +165,6 @@ class BaseWss(BaseSub):
                     time.sleep(10)
                 else:
                     logErr.info(f'行情服务器重连成功')
-                    self.resubscribe()
             except:  # Python内部错误（onPacket内出错）
                 et,ev,tb=sys.exc_info()
                 self.onError(et,ev,tb)
@@ -184,14 +178,15 @@ class BaseWss(BaseSub):
                 time.sleep(1)
             try:
                 # has no data to callback for 5 minutes, reconnect
-                if arrow.now().timestamp-self._lastCallback>300:
-                    logErr.info('websocket recv no data for 5 minutes, try to reconnect...')
-                    self._reconnect()
-                else:
+                if self._active:
+                    if self._noDataWait and time.time()-self._lastCallback>self._noDataWait:
+                        logErr.info(f'websocket sub {self.subDict} recv no data for 5 minutes, try to reconnect...')
+                        self._reconnect()
+                        self._lastCallback = time.time()
                     self.onHeartBeat()
             except:
                 et,ev,tb=sys.exc_info()
-                # todo: just logs this, notifying user is not necessary
+                # todo: just log this, notifying user is not necessary
                 self.onError(et,ev,tb)
                 self._reconnect()
 
@@ -227,7 +222,7 @@ class BaseWss(BaseSub):
         pass
 
     def callback(self, symbol, type, params):
-        self._lastCallback = arrow.now().timestamp
+        self._lastCallback = time.time()
         super().callback(symbol,type,params)
 
     # ----------------------------------------------------------------------
