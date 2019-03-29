@@ -29,15 +29,13 @@ class Quote(object):
         self.hb = huobipro()
         self.response_symbols, self.markets, self.marketNames, self.marketId_ccxtsymbol_mapping = self.getMarketIds()
 
-    def get_commen_symbols(self):
+    def get_huobipro_symbols(self):
         logger.info("获取共同交易对")
         url = HUOBIPRO_API + "v1/common/symbols"
         res = eval(requests.get(url).content.decode("utf-8"))
-        huobi_symbols = set([i["base-currency"].upper() + "/" + i["quote-currency"].upper() for i in res["data"]])
-        bytetrade_symbol = set(self.marketNames)
-        commen_symbol = huobi_symbols & bytetrade_symbol
+        huobi_symbols = [i["base-currency"].upper() + "/" + i["quote-currency"].upper() for i in res["data"]]
 
-        return list(commen_symbol)
+        return huobi_symbols
 
     def parse_response(self, response):
         """
@@ -123,7 +121,13 @@ class Quote(object):
         logger.info("订阅bytetrade各个交易对成交价格")
         # 订阅我们有的火币也有的交易对
         self.hb.start()
-        for symbol in self.get_commen_symbols():
+
+        huobipro_symbols = self.get_huobipro_symbols()
+        # 我们有并且火币也有的交易对
+        # bytetrade_symbol = set(self.marketNames)
+        # commen_symbol = list(set(huobi_symbols) & bytetrade_symbol)
+        # 订阅火币所有的交易对
+        for symbol in huobipro_symbols:
             self.hb.subscribeDeals(symbol, self.onDeal_huobipro)
         logger.info("订阅火币各个交易对成交价格")
 
