@@ -11,6 +11,7 @@ import multiprocessing.dummy
 
 from wssExchange import bytetrade, huobipro
 from priceserver.common.logger import getLog
+from priceserver.common.db_connection import ConnectRedis
 from priceserver.conf.settings import HUOBIPRO_API, COIN_BASE_URL, BYTETRADE_API, COIN_CURRENCY, CURRENCY_LIST
 
 moneyLst = CURRENCY_LIST
@@ -127,18 +128,23 @@ class Quote(object):
         logger.info("订阅火币各个交易对成交价格")
 
     def getMarketIds(self):
+        # 获取交易所正在进行的市场
         logger.info("正在获取Market，MarketName，marketId与ccxtSymbol映射等信息")
-        url = BYTETRADE_API + "?cmd=markets"
+        url = BYTETRADE_API + "?cmd=marketsPrice"
         res = eval(requests.get(url).content.decode("utf-8"))
 
-        markets = [str(i["stockId"]) + "/" + str(i["moneyId"]) for i in res["symbols"] if i["money"] != "BTT"]  # "3/2"
-        marketNames = [i["name"] for i in res["symbols"] if i["money"] != "BTT"]  # "CMT/KCASH"
-        res_symbols = res["symbols"]
-        coinId_ccxtsymbol_mapping = {str(i["id"]): i["name"] for i in res["symbols"] if i["money"] != "BTT"}
+        markets = [str(i["stockId"]) + "/" + str(i["moneyId"]) for i in res["result"]]  # "3/2"
+        marketNames = [i["name"] for i in res["result"]]  # "CMT/KCASH"
+        res_symbols = res["result"]
+        coinId_ccxtsymbol_mapping = {str(i["id"]): i["name"] for i in res["result"]}
         return res_symbols, markets, marketNames, coinId_ccxtsymbol_mapping
 
 
 if __name__ == '__main__':
+    # 开始的时候将原来的键删掉，构建新的
+    r = ConnectRedis()
+    r.delete("price_server_bytetrade")
+    r.delete("price_server_huobipro")
     # 用来维护兑换法币的redis hash
     q = Quote()
 
