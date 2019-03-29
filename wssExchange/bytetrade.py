@@ -3,7 +3,7 @@ from wssExchange.base.basewss import *
 from bytetradeLib.ccxtBytetrade import ccxtBytetrade
 import arrow
 
-TEST = True
+TEST = False
 # 常量定义
 # BYTETRADE_WSS = 'wss://p2.bytetrade.io/ws/'
 # BYTETRADE_API = 'http://p2.bytetrade.io/bittrade/v1/me'

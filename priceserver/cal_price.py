@@ -3,6 +3,7 @@
 # Date: 2019/3/14
 # Desc: 获取各个交易所的symbol的图并计算路径
 import sys
+import time
 
 from collections import deque
 
@@ -51,28 +52,37 @@ def symbol_graph(symbols):
 
 
 def get_total_graph(exchange):
-    symbols = get_symbols_from_exchange(exchange)
-    symbols_graph = symbol_graph(symbols)
-    cu = get_currency_price()
+    graph = r.hget("price_server_graph", exchange)
+    # 看有没有这个交易所的图的缓存
+    if graph:
+        symbols_graph = eval(graph)
+    else:
+        symbols = get_symbols_from_exchange(exchange)
+        symbols_graph = symbol_graph(symbols)
 
-    for i in cu:
-        coin, currency = i.split("/")
+        cu = get_currency_price()
 
-        if coin in symbols_graph.keys():
-            symbols_graph[coin].add(currency)
+        for i in cu:
+            coin, currency = i.split("/")
 
-            if currency in symbols_graph.keys():
-                symbols_graph[currency].add((coin))
-            else:
-                symbols_graph[currency] = set()
-                symbols_graph[currency].add(coin)
+            if coin in symbols_graph.keys():
+                symbols_graph[coin].add(currency)
+
+                if currency in symbols_graph.keys():
+                    symbols_graph[currency].add((coin))
+                else:
+                    symbols_graph[currency] = set()
+                    symbols_graph[currency].add(coin)
+
+        r.hset("price_server_graph", exchange, str(symbols_graph))
 
     return symbols_graph
 
 
 def search(graph, start, mid, end, path=[]):
-    if mid in graph[end]:
-        return [start, mid, end]
+    if mid in graph[start]:
+        if mid in graph[end]:
+            return [start, mid, end]
     else:
         # 创建搜索队列
         search_queue = deque()
@@ -86,6 +96,7 @@ def search(graph, start, mid, end, path=[]):
         while search_queue:
             # 取出队列中最先加进去的一个node
             node = search_queue.popleft()
+            print(node)
 
             if not node in searched:
                 # 查看是不是结束点
@@ -109,7 +120,6 @@ def search(graph, start, mid, end, path=[]):
                             temp.append(j)
 
                     next_paths = next_paths + [path + [i] for i in graph[node] if i not in temp]
-
     return False
 
 
@@ -187,13 +197,16 @@ def calculate_price(exchange, start, mid, end):
 if __name__ == '__main__':
     # symbols = get_symbols_from_exchange("bytetrade")
     # total_graph = get_total_graph("huobipro")
-    total_graph = get_total_graph("huobipro")
+    exchange = "huobipro"
+    total_graph = get_total_graph(exchange)
     # print(total_graph)
-
-    path = search(total_graph, "KCASH", "BTC", "CNY")
-    print("path")
+    t1 = time.time()
+    path = search(total_graph, "KCASH", "MT", "CNY")
+    t2 = time.time()
+    print(t2 - t1)
     print(path)
-    price = cal_price("huobipro", path)
+    price = cal_price(exchange, path)
     # price = calculate_price("huobipro", "MT", "CNY")
     print(price)
+
 #
