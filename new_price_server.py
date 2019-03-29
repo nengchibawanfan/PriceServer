@@ -3,6 +3,7 @@ from flask import Flask
 from flask_graphql import GraphQLView
 from werkzeug.contrib.fixers import ProxyFix
 
+from priceserver.conf.settings import PUSH_BEAR_KEY
 from priceserver.schema import schema
 
 app = Flask(__name__)
@@ -14,7 +15,7 @@ def push_bear():
     import requests
     url = "https://pushbear.ftqq.com/sub"
     data = {
-        "sendkey": "11970-ba5f3d1644a4bd880a04ebdef3560f69",
+        "sendkey": PUSH_BEAR_KEY,
         "text": "PriceServer——GraphQL",
         "desp": "报价服务重启！快去看看为啥！"
     }
