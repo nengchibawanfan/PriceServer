@@ -12,6 +12,6 @@ RUN chmod +x /usr/bin/auto_restart.sh
 
 EXPOSE 5000
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 CMD ["auto_restart.sh"]

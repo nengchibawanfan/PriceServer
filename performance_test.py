@@ -2,6 +2,7 @@
 # Author: zhangchao
 # Date: 
 # Desc: 性能测试例子
+import random
 
 from locust import HttpLocust, TaskSet, task
 
@@ -9,21 +10,53 @@ class UserBehavior(TaskSet):
 
     @task(1)
     def graphql(self):
-
-        params = {'query': '''{
-  priceServer{
-    info {
-      exchangeName
-      coinList {
-        symbolName
-        price {
-          currency
-          price
-        }
-      }
+        lst = ['''{
+  symbols(symbolName: "CMT/ETH, MT/ETH, KCASH/ETH, MT/BTC, CMT/BTC, APPC/ETH, BAT/ETH", currency: "CNY, USD, KRW"){
+    symbolName
+    price{
+      currency
+      price
     }
   }
-}'''}
+}''', '''{
+  symbols(symbolName: "MT/ETH, CMT/ETH", currency: "USD"){
+    symbolName
+    price{
+      currency
+      price
+    }
+  }
+}''', '''{
+  symbols(symbolName: "KCASH, MT", currency: "USD, CNY"){
+    symbolName
+    price{
+      currency
+      price
+    }
+  }
+}''', '''{
+  symbols(symbolName: "CMT", currency: "CNY"){
+    symbolName
+    price{
+      currency
+      price
+    }
+  }
+}''' ,
+               '''{
+  symbols{
+    symbolName
+    price{
+      currency
+      price
+    }
+  }
+}'''
+               ]
+        # param = random.choices(lst)
+        param = lst[-1]
+
+        params = {'query': param}
 
         self.client.post("/graphql", params=params)
         # assert r.state_code == 200
