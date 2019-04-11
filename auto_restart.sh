@@ -13,7 +13,7 @@ do
     if [ -z $getPriceProcess ]
     then
         echo "getPriceProcess is restarted"
-        nohup python3 get_cu_price_and_sub_redis.py &
+        nohup python get_cu_price_and_sub_redis.py &
     else
          echo "getPriceProcess is running"
     fi
