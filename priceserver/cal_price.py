@@ -192,7 +192,7 @@ def cal_price(path):
         for i in dic.values():
             res *= float(i)
     else:
-        logger.info("交易对没有路径，返回价格为0")
+        # logger.info("交易对没有路径，返回价格为0")
         res = 0
     return res
 
