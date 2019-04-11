@@ -61,8 +61,8 @@ class Query(graphene.ObjectType):
 
         else:
             pass
-            # symbol_list = SYMBOL_LIST
-            symbol_list = MARKET_LIST
+            symbol_list = SYMBOL_LIST
+            # symbol_list = MARKET_LIST
             # all 就是我们交易所目前支持的所有的币对
             # 返回所有
 
