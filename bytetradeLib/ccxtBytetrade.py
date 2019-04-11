@@ -17,7 +17,6 @@ curDir = os.path.dirname(__file__)
 BYTETRADE_API = 'https://api.bytetrade.io'
 
 dapp = 'Sagittarius'
-btt_lib = bytetradelib()
 # BTT价格更新周期：5分钟
 BTT_UPDATE_TIME = 300
 # 额外抵押的BTT
@@ -154,7 +153,7 @@ class ccxtBytetrade(ccxt.Exchange):
         marketInfo = list(filter(eq, self.marketData))
         if len(marketInfo) > 0:
             t = self.getBasePrec(None, marketId.split('/')[0])
-            moneyPrec = min(marketInfo[0]['moneyPrec'],8)
+            moneyPrec = min(marketInfo[0]['moneyPrec'], 8)
             for i in range(0, moneyPrec):
                 t = t / 10
             return t
@@ -443,188 +442,24 @@ class ccxtBytetrade(ccxt.Exchange):
         return None
 
     def create_order(self, symbol, type, side, amount, price=None, params={}):
-        if type == 'market':
-            raise InvalidOrder("bytetrade createOrder() does not support market order")
-        idPair = symbol.split('/')
-        # bttSymbol = self.formatBttSymbol(symbol)
-        # bttSymbol=self.findBttSymbol(symbol)
-        symbolPair = [self.getAsset(None, idPair[0])['asset'], self.getAsset(None, idPair[1])['asset']]
-        bttFee = 0
-        bttAsFee = False
-        if params and 'btt_as_fee' in params and params['btt_as_fee']:
-            bttAsFee = True
-            bttFee = self.getFreezeBttFee(idPair[0], idPair[1], side, 1, amount, price)
-        # strAmount = self.calcAmountString(amount, idPair[0])
-        amountPrec = self.getAmountPrecById(symbol)
-        pricePrec = self.getPricePrecById(symbol)
-        amount = Decimal(amount).quantize(
-            Decimal(str(1 / (self.getBasePrec(None, idPair[0]) / amountPrec))),ROUND_DOWN) * self.getBasePrec(None, idPair[0])
-        price = Decimal(price).quantize(
-            Decimal(str(1 / (self.getBasePrec(None, idPair[1]) / pricePrec))),ROUND_DOWN) * self.getBasePrec(None, idPair[1])
-        # print('-'*50)
-        # print('sendOrder strAmount: %s, amount: %s'%(strAmount,str(amount.quantize(Decimal('0'), rounding=ROUND_DOWN))))
-        # print('-'*50)
-        # if strAmount=='0':
-        #     logError.info('%s try to create %s 0 amount order'%(self.id,symbol))
-        #     return None
-        if side == 'sell':
-            bttSide = 1
-        elif side == 'buy':
-            bttSide = 2
-        else:
-            raise InvalidOrder('order side is not buy or sell')
-        # if not amount>0:
-        #     raise InvalidOrder('%s order amount is zero'%(symbol))
-        str_trans = btt_lib.create_order3_transaction(
-            '300000000000000',
-            self.apiKey,
-            bttSide,
-            1,
-            '/'.join(symbolPair),
-            str(amount.quantize(Decimal('0'), rounding=ROUND_DOWN)),
-            # strAmount,
-            str(price.quantize(Decimal('0'), rounding=ROUND_DOWN)),
-            bttAsFee,
-            str(bttFee),
-            None,
-            None,
-            int(idPair[1]),
-            int(idPair[0]),
-            dapp,
-            self.secret
-        )
-        res = self.fetch(self.urlprex + '?cmd=putTransaction&method=blockchain.put_transaction&trObject=' + str_trans,
-                         'POST')
-        return res
+
+        pass
 
     def cancel_order(self, id, symbol=None, params={}):
-        # if symbol is None:
-        #     raise ExchangeError(self.apiKey + ' cancelOrder() requires a symbol argument')
-        marketId = symbol  # params['marketId']
-        moneyId = int(marketId / 2147483647)
-        stockId = int(marketId % 2147483647)
-        symbolPair = [self.getAsset(None, stockId)['asset'], self.getAsset(None, moneyId)['asset']]
-        str_trans = btt_lib.cancel_order2_transaction(
-            '300000000000000',
-            self.apiKey,
-            '/'.join(symbolPair),
-            id,
-            moneyId,
-            stockId,
-            dapp,
-            self.secret
-        )
-        res = self.fetch(self.urlprex + '?cmd=putTransaction&method=blockchain.put_transaction&trObject=' + str_trans,
-                         'POST')
-        return res
 
-    def transfer(self, targetId, symbolId, amount,message=None):
-        # str_amount = self.getMinAmount(amount, self.getBasePrec(None, symbolId), self.getMinTradeAmount(None, symbolId))
-        str_amount = self.calcAmountString(amount, symbolId)
-        if str_amount == '0':
-            logError.info('%s try to transfer 0 amount %s to %s' % (self.id, symbolId, targetId))
-            return None
-        if symbolId == 1:
-            amount -= 300000000000000
-        # str_amount = str(int(amount))
+        pass
 
-        if(message):
-            str_trans = btt_lib.transfer2_order_transaction(
-                '900000000000000',
-                self.apiKey,
-                targetId,
-                int(symbolId),
-                str_amount,
-                dapp,
-                message,
-                self.secret
-            )
-        else:
-            str_trans = btt_lib.transfer_order_transaction(
-                '300000000000000',
-                self.apiKey,
-                targetId,
-                int(symbolId),
-                str_amount,
-                dapp,
-                self.secret
-            )
-        res = self.fetch(self.urlprex + '?cmd=putTransaction&method=blockchain.put_transaction&trObject=' + str_trans,'POST')
-        return res
+    def transfer(self, targetId, symbolId, amount, message=None):
+
+        pass
 
     def createUser(self, id, privateKey):
-        address = btt_lib.get_address_from_wif_private_key(privateKey)
-        auth = {}
-        auth[address] = 100
-        userJson = {
-            'id': id,
-            'owner': {
-                'weight_threshold': 100,
-                'account_auths': {},
-                'key_auths': {},
-                'address_auths': auth
-            },
-            'active': {
-                'weight_threshold': 100,
-                'account_auths': {},
-                'key_auths': {},
-                'address_auths': auth
-            }}
-        res = self.fetch(self.urlprex + '?cmd=registerAccountKcash&fee=3000000&account=' + json.dumps(userJson))
-        return res
+
+        pass
 
     def withdraw(self, code, amount, address, tag=None, params={}):
-        middle_address_json = self.getPixiuAddress()
-        chain_type = 0  # 1:eth，2:btc，3:cmt
-        if(code==32):  # BTC
-            chain_type = 2
-        elif(code == 35): # 正式网络CMT
-            chain_type = 3
-        else:
-            chain_type = 1
-        if(middle_address_json and code !=32): # 不为BTC类型时的地址
-            middle_address = middle_address_json["ethereum"]
-        elif(middle_address_json and code == 32): # 为BTC类型时的地址
-            middle_address = middle_address_json["bitcoin"]
-        else:
-            middle_address = None
-        if not middle_address:
-            logError.error('withdraw error in get pixiu address, quit')
-            return {
-                'info': {'result': -1, 'withdraw_id': '', 'state': ''},
-                'id': -1
-            }
-        asset_coin = self.getAsset(None, code)
-        str_amount = self.calcAmountString(amount, code)
 
-        str_trans = btt_lib.propose_withdraw_transaction(
-            '300000000000000',
-            self.apiKey,
-            middle_address,
-            asset_coin["id"],
-            str_amount,
-            dapp,
-            self.secret
-        )
-
-        pixiu_withdraw_json = {}
-        pixiu_withdraw_json['cmd'] = 'withdrawNotify'
-        pixiu_withdraw_json['chain_type'] = chain_type
-        pixiu_withdraw_json['toExternalAddress'] = address
-        pixiu_withdraw_json['transaction'] = str_trans
-        pixiu_withdraw_json['chainContractAddress'] = asset_coin["chain_contract_address"]
-
-        logError.info(pixiu_withdraw_json)
-
-
-        res = requests.post(self.pixiu_urlprex, data=pixiu_withdraw_json)
-        #log.info(res.json())
-        print(res.json())
-
-        return {
-            'info': {'id': res.json()['id'],'state':'','withdraw_req':pixiu_withdraw_json},
-            'code': res.json()['code']
-        }
+        pass
 
 
 if __name__ == '__main__':
