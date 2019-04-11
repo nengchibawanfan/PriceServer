@@ -130,10 +130,10 @@ class Quote(object):
         self.hb.start()
         huobipro_symbols = self.get_huobipro_symbols()
         # 我们有并且火币也有的交易对
-        # bytetrade_symbol = set(self.marketNames)
-        # commen_symbol = list(set(huobi_symbols) & bytetrade_symbol)
+        bytetrade_symbol = set(self.marketNames)
+        commen_symbol = list(set(huobipro_symbols) & bytetrade_symbol)
         # 订阅火币所有的交易对
-        for symbol in huobipro_symbols:
+        for symbol in commen_symbol:
             self.hb.subscribeDeals(symbol, self.onDeal_huobipro)
             time.sleep(0.1)
         logger.info("订阅火币各个交易对成交价格")
