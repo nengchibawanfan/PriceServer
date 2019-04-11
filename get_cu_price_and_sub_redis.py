@@ -77,7 +77,7 @@ class Quote(object):
         # 所有的法币名称
         response = eval(self.sendRequest(base))
         for symbol in response["data"]:
-            if symbol["base"] in [i for i in COIN_CURRENCY]:
+            if symbol["base"] in COIN_CURRENCY:
                 k = symbol["base"] + "/" + symbol["currency"]
                 price = symbol["latest"]
                 # 将value写入到redis中
