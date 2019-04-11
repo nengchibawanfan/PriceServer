@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Author: zhangchao
 # Date: 2019/3/14
-# Desc: 获取各个交易所的symbol的图并计算路径
+# Desc: 获取各个交易所的symbol的图并计算路径和价格
 import sys
 import time
 
@@ -179,34 +179,56 @@ def cal_price(exchange, path):
     return res
 
 
-def calculate_price(exchange, start, mid, end):
-    key = start + "_" + mid + "_" + end + "_" + exchange
-    path = r.hget("price_server_path", key)
+def calculate_price(start, mid, end):
+
     # 从缓存中获取路径
-    if path:
-        path = eval(path)
-    else:
-        # 缓存中没有，就计算路径并加入缓存
-        total_graph = get_total_graph(exchange)
-        path = search(total_graph, start, mid, end)
-        r.hset("price_server_path", key, str(path))
-    price = cal_price(exchange, path)
+    try:
+        key = start + "_" + mid + "_" + end + "_" + "bytetrade"
+        path = r.hget("price_server_path", key)
+        if path:
+            path = eval(path)
+        else:
+            # 缓存中没有，就计算路径并加入缓存
+            total_graph = get_total_graph("bytetrade")
+            path = search(total_graph, start, mid, end)
+            r.hset("price_server_path", key, str(path))
+        price = cal_price("bytetrade", path)
+    except:
+        price = 0
+
+    try:
+        if price == 0:
+            key = start + "_" + mid + "_" + end + "_" + "huobipro"
+            path = r.hget("price_server_path", key)
+            if path:
+                path = eval(path)
+            else:
+                # 缓存中没有，就计算路径并加入缓存
+                total_graph = get_total_graph("huobipro")
+                path = search(total_graph, start, mid, end)
+                r.hset("price_server_path", key, str(path))
+            price = cal_price("huobipro", path)
+        else:
+            price = price
+    except:
+        logger.info(f"{start, mid, end}找不到这个路径")
     return price
 
 
 if __name__ == '__main__':
     # symbols = get_symbols_from_exchange("bytetrade")
     # total_graph = get_total_graph("huobipro")
-    exchange = "huobipro"
+    exchange = "bytetrade"
+    # exchange = "huobipro"
     total_graph = get_total_graph(exchange)
-    # print(total_graph)
-    t1 = time.time()
-    path = search(total_graph, "KCASH", "MT", "CNY")
-    t2 = time.time()
-    print(t2 - t1)
+    print(total_graph)
+    # t1 = time.time()
+    path = search(total_graph, "MT", "BTC", "CNY")
+    # t2 = time.time()
+    # print(t2 - t1)
     print(path)
-    price = cal_price(exchange, path)
+    # price = cal_price(exchange, path)
     # price = calculate_price("huobipro", "MT", "CNY")
-    print(price)
+    # print(price)
 
 #

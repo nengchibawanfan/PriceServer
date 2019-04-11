@@ -1,7 +1,9 @@
+import random
+
 import graphene
 
 from priceserver.cal_price import calculate_price
-from priceserver.conf.settings import EXCHANGE_LIST, SYMBOL_LIST, CURRENCY_LIST
+from priceserver.conf.settings import SYMBOL_LIST, MARKET_LIST, CURRENCY_LIST, PRIORITY
 from priceserver.common.logger import getLog
 
 logger = getLog()
@@ -15,54 +17,23 @@ class Symbol(graphene.ObjectType):
     symbol_name = graphene.String()
     price = graphene.List(Price)
 
-
-class Exchange(graphene.ObjectType):
-    exchange_name = graphene.String()
-    coin_list = graphene.List(Symbol)
-
-
-class Info(graphene.ObjectType):
-    # info = graphene.List(Exchange)
-    info = graphene.List(Exchange)
-
-
-def _exchange(exchange_name, symbol, currency):
-
-    if symbol:
-        temp = symbol.split(",")
-        symbol_list = [i.replace(" ", "") for i in temp]
-    else:
-        symbol_list = SYMBOL_LIST
-
-    obj = Exchange(exchange_name=exchange_name,
-                   coin_list=[_symbol(symbol_name=symbol_name, exchange_name=exchange_name, currency=currency) for
-                              symbol_name in symbol_list]
-                   )
-    return obj
-
-
-def _symbol(symbol_name, exchange_name, currency):
-    if currency:
-        temp = currency.split(",")
-        currency_list = [i.replace(" ", "") for i in temp]
-    else:
-        currency_list = CURRENCY_LIST
-
-    obj = Symbol(symbol_name=symbol_name,
-                 price=[_price(currency=cu, symbol_name=symbol_name,
-                               exchange_name=exchange_name) for cu in currency_list])
+def create_symbol_obj(symbol_name, currency):
+    obj = Symbol(symbol_name=symbol_name, price=[create_price_obj(symbol_name, i) for i in currency])
 
     return obj
 
+def create_price_obj(symbol_name, currency):
+    if "/" in symbol_name:
+        symbol = symbol_name
+    else:
+        symbol = symbol_name + "/" + PRIORITY[0]
 
-def _price(currency, symbol_name, exchange_name):
-    print(currency, symbol_name, exchange_name)
-    start, mid = symbol_name.split("/")
-    end = currency
-    price = calculate_price(exchange_name, start, mid, end)
 
-    return Price(currency=currency, price=price)
-
+    start, mid = symbol.split("/")
+    price = calculate_price(start, mid, currency)
+    # price = random.randrange(1000)
+    obj = Price(currency=currency, price=price)
+    return obj
 
 # 定义查询接口，类似于 GET
 class Query(graphene.ObjectType):
@@ -74,30 +45,32 @@ class Query(graphene.ObjectType):
 
     # 查询接口以及必须的参数
     # graphene.String(required=True)
-    price_server = graphene.Field(Info, exchange_name=graphene.String(),
-                                  symbol=graphene.String(),
-                                  currency=graphene.String())
+    symbols = graphene.List(Symbol, symbol_name=graphene.String(), currency=graphene.String())
 
-    # exchange = graphene.List(Exchange)
-    # symbol = graphene.List(Symbol)
-    # price = graphene.Field(Price)
+    def resolve_symbols(self, info, symbol_name=None, currency=None, **kwargs):
+        if currency:
+            temp = currency.split(",")
+            currency_list = [i.replace(" ", "") for i in temp]
+        else:
+            currency_list = CURRENCY_LIST
+        # 返回所有的
 
-    def resolve_price_server(self, info, exchange_name=None, symbol=None, currency=None):
-
-        if exchange_name:
-            temp = exchange_name.split(",")
-            exchange_list = [i.replace(" ", "") for i in temp]
+        if symbol_name:
+            temp = symbol_name.split(",")
+            symbol_list = [i.replace(" ", "") for i in temp]
 
         else:
-            exchange_list = EXCHANGE_LIST
+            pass
+            # symbol_list = SYMBOL_LIST
+            symbol_list = MARKET_LIST
+            # all 就是我们交易所目前支持的所有的币对
+            # 返回所有
 
-        obj = Info(
-            info=[_exchange(exchange_name=ex, symbol=symbol, currency=currency) for ex in
-                  exchange_list]
-        )
+        return [create_symbol_obj(i, currency_list)for i in symbol_list]
 
-        return obj
-
+    all_price = graphene.List(Price, currency=graphene.String())
+    def resolve_all_price(self, info, currency, **kwargs):
+        pass
 
 
 if __name__ == '__main__':

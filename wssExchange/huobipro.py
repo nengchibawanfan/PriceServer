@@ -1,7 +1,6 @@
 # coding=utf-8
 import base64
 import hmac
-import types
 import copy
 import urllib
 from urllib import parse
@@ -312,24 +311,24 @@ if __name__ == '__main__':
         print("onDeal: ", symbol, data)
 
 
-    #
-    # wss1 = huobiproTemp({"apiKey": "6892475f-308e2f26-163666db-0e387",
-    #                     "secret": "7fed2c88-bf6981ff-11a0ef5e-907f4",
-    #                     "wssUrl": HUOBI_WSS_TRADE})
+
+    wss1 = huobipro({"apiKey": "24ccad5-a4d915f5-20e78",
+                        "secret": "fc32c7a8-8dd1c07b-80c4a",})
     # wss2 = huobiproTemp({"apiKey": "6892475f-308e2f26-163666db-0e387",
     #                     "secret": "7fed2c88-bf6981ff-11a0ef5e-907f4",
     #                     "wssUrl": HUOBI_WSS_TRADE})
 
-    wss = huobipro()
-    b = wss.fetch_markets()
-    for i in b:
-        print(i['symbol'],i['precision'])
+    # wss = huobipro()
+    # b = wss.fetch_markets()
+    # for i in b:
+    #     print(i['symbol'],i['precision'])
     # wss.start()
     # wss.subscribeTicker('BTC/USDT',onDepth)
-    # wss1.start()
+    wss1.start()
+    wss1.subscribeBalance(onBalance=onDepth)
     # wss2.start()
-    # wss.signServer()
-    # wss.subscribeBalance(model=1)
+    # wss1.signServer()
+    # wss1.subscribeBalance(model=1)
     # wss1.subscribeBalance(model=0)
     # wss2.subscribeBalance(model=1)
     # wss.subscribeBalance()

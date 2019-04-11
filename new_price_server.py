@@ -1,4 +1,9 @@
-# -*- coding: utf-8 -*
+# -*- coding: utf-8 -*-
+# Author: zhangchao
+# Date: 2019-04-10
+# Desc: 报价服务入口，Flask-app
+
+
 from flask import Flask
 from flask_graphql import GraphQLView
 from werkzeug.contrib.fixers import ProxyFix
@@ -31,5 +36,5 @@ if __name__ == '__main__':
     push_bear()
     # 在这里加一个启动短信提醒
 
-    app.wsgi_app = ProxyFix(app.wsgi_app)
+    # app.wsgi_app = ProxyFix(app.wsgi_app)
     app.run(host="0.0.0.0", port="5000", debug=False, threaded=True)

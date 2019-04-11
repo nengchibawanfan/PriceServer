@@ -15,8 +15,8 @@ if TEST:
     BYTETRADE_WSS = 'wss://c2.bytetrade.io/ws/'
     BYTETRADE_API = 'https://c2.bytetrade.io/bittrade/v1/me'
 else:
-    BYTETRADE_WSS = 'wss://p7.bytetrade.com/ws/'
-    BYTETRADE_API = 'https://p7.bytetrade.com/bittrade/v1/me'
+    BYTETRADE_WSS = 'wss://p2.bytetrade.com/ws/'
+    BYTETRADE_API = 'https://p2.bytetrade.com/bittrade/v1/me'
 
 
 ########################################################################

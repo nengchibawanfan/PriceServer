@@ -3,6 +3,7 @@
 # Date: 2019/3/15
 # Desc: 订阅各个交易所的成交价格，获取coin兑换法币的价格
 import time
+import ccxt
 
 import redis
 import requests
@@ -14,7 +15,7 @@ from priceserver.common.logger import getLog
 from priceserver.common.db_connection import ConnectRedis
 from priceserver.conf.settings import HUOBIPRO_API, COIN_BASE_URL, BYTETRADE_API, COIN_CURRENCY, CURRENCY_LIST
 
-moneyLst = CURRENCY_LIST
+moneyLst = CURRENCY_LIST   # 法币的种类
 logger = getLog()
 
 
@@ -27,10 +28,16 @@ class Quote(object):
         self.pool = multiprocessing.dummy.Pool(8)
         self.bt = bytetrade()
         self.hb = huobipro()
-        self.response_symbols, self.markets, self.marketNames, self.marketId_ccxtsymbol_mapping = self.getMarketIds()
+        # 获取交易界面上的交易对，
+        # response              3/2             BTC/ETH              {35: CMT}
+        self.response_symbols = None
+        self.markets = None
+        self.marketNames = None
+        self.marketId_ccxtsymbol_mapping = None
+        self.getMarketInfos()
 
     def get_huobipro_symbols(self):
-        logger.info("获取共同交易对")
+        logger.info("获取火币交易对")
         url = HUOBIPRO_API + "v1/common/symbols"
         res = eval(requests.get(url).content.decode("utf-8"))
         huobi_symbols = [i["base-currency"].upper() + "/" + i["quote-currency"].upper() for i in res["data"]]
@@ -44,7 +51,6 @@ class Quote(object):
         :return:
         """
         response = eval(response)
-        # self.quote[base] = {}
         value = {}
         for symbol in response["data"]:
             coin = symbol["base"]
@@ -119,9 +125,9 @@ class Quote(object):
         self.bt.start()
         self.bt.subscribeTicker(self.markets, self.onTicker_bytetrade)
         logger.info("订阅bytetrade各个交易对成交价格")
-        # 订阅我们有的火币也有的交易对
-        self.hb.start()
 
+        # 订阅我们有的火币所有的交易对
+        self.hb.start()
         huobipro_symbols = self.get_huobipro_symbols()
         # 我们有并且火币也有的交易对
         # bytetrade_symbol = set(self.marketNames)
@@ -129,9 +135,10 @@ class Quote(object):
         # 订阅火币所有的交易对
         for symbol in huobipro_symbols:
             self.hb.subscribeDeals(symbol, self.onDeal_huobipro)
+            time.sleep(0.1)
         logger.info("订阅火币各个交易对成交价格")
 
-    def getMarketIds(self):
+    def getMarketInfos(self):
         # 获取交易所正在进行的市场
         logger.info("正在获取Market，MarketName，marketId与ccxtSymbol映射等信息")
         url = BYTETRADE_API + "?cmd=marketsPrice"
@@ -141,16 +148,34 @@ class Quote(object):
         marketNames = [i["name"] for i in res["result"]]  # "CMT/KCASH"
         res_symbols = res["result"]
         coinId_ccxtsymbol_mapping = {str(i["id"]): i["name"] for i in res["result"]}
-        return res_symbols, markets, marketNames, coinId_ccxtsymbol_mapping
+        self.response_symbols = res_symbols
+        self.markets = markets
+        self.marketNames = marketNames
+        self.marketId_ccxtsymbol_mapping = coinId_ccxtsymbol_mapping
+
+    def get_price_by_rest(self):
+        # restful查一下最新的成交价格
+        for info in self.response_symbols:
+            ccxt_symbol = info["name"]
+            self.r.publish("price_server_" + "bytetrade_" + ccxt_symbol, info["today"]["last"])
+            self.r.hset("price_server_bytetrade", ccxt_symbol, info["today"]["last"])
+        huobipro = ccxt.huobipro()
+        res = huobipro.fetch_tickers()
+        for k, v in res.items():
+            ccxt_symbol = k
+            self.r.publish("price_server_" + "huobipro_" + ccxt_symbol, v["close"])
+            self.r.hset("price_server_huobipro", ccxt_symbol, v["close"])
+
 
 
 if __name__ == '__main__':
-    # 开始的时候将原来的键删掉，构建新的
+    # 开始的时候将原来的键删掉，构建新的  一旦加了新的交易对，重启程序
     r = ConnectRedis()
     r.delete("price_server_bytetrade")
     r.delete("price_server_huobipro")
     # 用来维护兑换法币的redis hash
     q = Quote()
+    q.get_price_by_rest()
 
     q.subscribeAllTicker()  # 维护各个marketId的实时价格
     while True:

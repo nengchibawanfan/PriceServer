@@ -1,26 +1,17 @@
+# -*- coding: utf-8 -*-
+# Author: zhangchao
+# Date: 
+# Desc: 性能测试例子
+
 from locust import HttpLocust, TaskSet, task
 
 class UserBehavior(TaskSet):
 
     @task(1)
     def graphql(self):
-        # params = {'query': '''{
-        #   priceServer{
-        #     info {
-        #       exchangeName
-        #       coinList {
-        #         symbolName
-        #         price {
-        #           currency
-        #           price
-        #         }
-        #       }
-        #     }
-        #   }
-        # }'''}
 
         params = {'query': '''{
-  priceServer(exchangeName: "bytetrade", currency: "CNY",  symbol: "CMT/ETH"){
+  priceServer{
     info {
       exchangeName
       coinList {
