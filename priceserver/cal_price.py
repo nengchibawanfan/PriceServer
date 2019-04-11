@@ -96,7 +96,6 @@ def search(graph, start, mid, end, path=[]):
         while search_queue:
             # 取出队列中最先加进去的一个node
             node = search_queue.popleft()
-            print(node)
 
             if not node in searched:
                 # 查看是不是结束点

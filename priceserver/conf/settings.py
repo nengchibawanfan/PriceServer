@@ -40,8 +40,33 @@ MARKET_LIST, SYMBOL_LIST = get_symbol_list()
 EXCHANGE_LIST = ["huobipro", "bytetrade"]
 # 支持的交易所
 
-CURRENCY_LIST = ["CNY", "USD", "GBP", "SGD", "HKD", "JPY", "CAD", "AUD", "EUR", "THB", "NZD", "KRW", "RUB", "MYR"]
+CURRENCY_LIST = ["CNY",     # 人民币
+                 "TWD",     # 新台币
+                 "BRL",     # 巴西雷亚尔
+                 "CHF",     # 法国法郎
+                 "TRY",     # 土耳其里拉
+                 "PLN",     # 波兰 兹罗提
+                 "UAH",     # 乌克兰 格里夫纳
+                 "VND",     # 越南盾
+                 "IDR",     # 印尼卢比
+                 "INR",     # 印度卢比
+                 "USD",     # 美元
+                 "GBP",     # 英镑
+                 "SGD",     # 新加坡
+                 "HKD",     # 港币
+                 "JPY",     # 日元
+                 "CAD",     # 加拿大
+                 "AUD",     # 澳大利亚
+                 "EUR",     # 欧元
+                 "THB",     # 泰铢
+                 "NZD",     # 新西兰
+                 "KRW",     # 韩元
+                 "RUB",     # 俄罗斯卢布
+                 "MYR"      # 马来西亚林吉特
+                 ]
 # 人民币     美元 英镑  新加坡元  港币  日元    还拿大元  澳大利亚元   欧元  泰铢   新西兰元  韩元  俄罗罗罗罗斯  马来西亚林吉特
+
+
 
 COIN_CURRENCY = ["BTC", "ETH"]
 # 保存的兑法币价格的币种   在订阅中的设置
