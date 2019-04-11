@@ -130,12 +130,15 @@ class Quote(object):
         self.hb.start()
         huobipro_symbols = self.get_huobipro_symbols()
         # 我们有并且火币也有的交易对
-        bytetrade_symbol = set(self.marketNames)
-        commen_symbol = list(set(huobipro_symbols) & bytetrade_symbol)
+        huobi_sub_symbols = []
+        stock_symbol = [i.split("/")[0] for i in self.marketNames]
+        for stock in stock_symbol:
+            for h_symbol in huobipro_symbols:
+                if h_symbol in [stock + "/ETH", stock + "/BTC"]:
+                    huobi_sub_symbols.append(h_symbol)
         # 订阅火币所有的交易对
-        for symbol in commen_symbol:
+        for symbol in huobi_sub_symbols:
             self.hb.subscribeDeals(symbol, self.onDeal_huobipro)
-            time.sleep(0.1)
         logger.info("订阅火币各个交易对成交价格")
 
     def getMarketInfos(self):
@@ -161,10 +164,14 @@ class Quote(object):
             self.r.hset("price_server_bytetrade", ccxt_symbol, info["today"]["last"])
         huobipro = ccxt.huobipro()
         res = huobipro.fetch_tickers()
-        for k, v in res.items():
-            ccxt_symbol = k
-            self.r.publish("price_server_" + "huobipro_" + ccxt_symbol, v["close"])
-            self.r.hset("price_server_huobipro", ccxt_symbol, v["close"])
+
+        stock_symbol = [i.split("/")[0] for i in self.marketNames]
+        for stock in stock_symbol:
+            for h_symbol, v in res.items():
+                if h_symbol in [stock + "/ETH", stock + "/BTC"]:
+                    ccxt_symbol = h_symbol
+                    self.r.publish("price_server_" + "huobipro_" + ccxt_symbol, v["close"])
+                    self.r.hset("price_server_huobipro", ccxt_symbol, v["close"])
 
 
 
@@ -176,7 +183,7 @@ if __name__ == '__main__':
     # 用来维护兑换法币的redis hash
     q = Quote()
     q.get_price_by_rest()
-
+    #
     q.subscribeAllTicker()  # 维护各个marketId的实时价格
     while True:
         q.start()  # 维护法币的价格

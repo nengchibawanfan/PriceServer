@@ -17,14 +17,17 @@ r = ConnectRedis()
 logger = getLog()
 
 
-def get_symbols_from_exchange(exchange_name):
+def get_symbols_from_exchange():
     """
     获取redis中保存的交易所的所有币对
     :param exchange_name: 交易所名称，huobipro， bytetrade
     :return: 交易所支持的币对的列表
     """
-    redis_key = "price_server_" + exchange_name
-    symbols = list(r.hgetall(redis_key).keys())
+    redis_key_huobi = "price_server_huobipro"
+    redis_key_bytetrade = "price_server_bytetrade"
+    symbols_huibo = list(r.hgetall(redis_key_huobi).keys())
+    symbols_bytetrade = list(r.hgetall(redis_key_bytetrade).keys())
+    symbols = list(set(symbols_huibo + symbols_bytetrade))
     return symbols
 
 
@@ -51,13 +54,13 @@ def symbol_graph(symbols):
     return res
 
 
-def get_total_graph(exchange):
+def get_total_graph():
     # graph = r.hget("price_server_graph", exchange)
     # # 看有没有这个交易所的图的缓存
     # if graph:
     #     symbols_graph = eval(graph)
     # else:
-    symbols = get_symbols_from_exchange(exchange)
+    symbols = get_symbols_from_exchange()
     symbols_graph = symbol_graph(symbols)
 
     cu = get_currency_price()
@@ -74,7 +77,7 @@ def get_total_graph(exchange):
                 symbols_graph[currency] = set()
                 symbols_graph[currency].add(coin)
 
-    r.hset("price_server_graph", exchange, str(symbols_graph))
+    # r.hset("price_server_graph", exchange, str(symbols_graph))
 
     return symbols_graph
 
@@ -88,6 +91,7 @@ def search(graph, start, mid, end, path=[]):
         search_queue = deque()
         # 初始化搜索队列
         path = path + [start]
+        print(path)
         search_queue += [start]
         # 记录已经搜索过的node
         searched = []
@@ -130,7 +134,7 @@ def node_is_end(node, end, path):
         return False
 
 
-def cal_price(exchange, path):
+def cal_price(path):
     # 拼接成交易对
     if path:
         symbols = []
@@ -141,19 +145,34 @@ def cal_price(exchange, path):
                 symbol = path[i] + "/" + path[i + 1]
                 symbols.append(symbol)
 
-        key = "price_server_" + exchange
+        key_bytetrade = "price_server_bytetrade"
+        key_huobipro = "price_server_huobipro"
 
         dic = {}
+        def get_price(symbol):
+            price_bytetrade = r.hget(key_bytetrade, symbol)
+            price_huobipro = r.hget(key_huobipro, symbol)
+
+            if price_bytetrade:
+                price = price_bytetrade
+            else:
+                if price_huobipro:
+                    price = price_huobipro
+                else:
+                    return False
+
+            return price
 
         for symbol in symbols:
             # 币币价格
-            price = r.hget(key, symbol)
+            price = get_price(symbol)
+
             if price:
                 dic[symbol] = price
             else:
                 t1, t2 = symbol.split("/")
                 reverse_symbol = t2 + "/" + t1
-                price = r.hget(key, reverse_symbol)
+                price = get_price(reverse_symbol)
                 if price:
                     if float(price) == 0:
                         dic[symbol] = 0
@@ -181,53 +200,63 @@ def cal_price(exchange, path):
 def calculate_price(start, mid, end):
 
     # 从缓存中获取路径
+
     try:
-        key = start + "_" + mid + "_" + end + "_" + "bytetrade"
+        # if price == 0:
+        key = start + "_" + mid + "_" + end
         path = r.hget("price_server_path", key)
         if path:
             path = eval(path)
         else:
             # 缓存中没有，就计算路径并加入缓存
-            total_graph = get_total_graph("bytetrade")
+            total_graph = get_total_graph()
             path = search(total_graph, start, mid, end)
-            r.hset("price_server_path", key, str(path))
-        price = cal_price("bytetrade", path)
+            if mid in path:
+                r.hset("price_server_path", key, str(path))
+        price = cal_price(path)
+        # else:
+        #     price = price
     except:
-        price = 0
+        logger.info(f"{start, mid, end}找不到这个路径")
 
     try:
         if price == 0:
-            key = start + "_" + mid + "_" + end + "_" + "huobipro"
+            key = start + "_" + mid + "_" + end + "_" + "bytetrade"
             path = r.hget("price_server_path", key)
             if path:
                 path = eval(path)
             else:
                 # 缓存中没有，就计算路径并加入缓存
-                total_graph = get_total_graph("huobipro")
+                total_graph = get_total_graph()
                 path = search(total_graph, start, mid, end)
-                r.hset("price_server_path", key, str(path))
-            price = cal_price("huobipro", path)
+                if mid in path:
+                    r.hset("price_server_path", key, str(path))
+            price = cal_price(path)
         else:
             price = price
     except:
-        logger.info(f"{start, mid, end}找不到这个路径")
+        price = 0
+
     return price
 
 
 if __name__ == '__main__':
     # symbols = get_symbols_from_exchange("bytetrade")
     # total_graph = get_total_graph("huobipro")
-    exchange = "bytetrade"
-    # exchange = "huobipro"
-    total_graph = get_total_graph(exchange)
-    print(total_graph)
-    # t1 = time.time()
-    path = search(total_graph, "MT", "BTC", "CNY")
-    # t2 = time.time()
-    # print(t2 - t1)
-    print(path)
+    # total_graph = get_total_graph("bytetrade")
+    # exchange = "bytetrade"
+    # # exchange = "huobipro"
+    # print(total_graph)
+    # # # t1 = time.time()
+    # path = search(total_graph, "MT", "BTC", "CNY")
+    # print(path)
+    # # t2 = time.time()
+    # # print(t2 - t1)
+    # print(path)
     # price = cal_price(exchange, path)
-    # price = calculate_price("huobipro", "MT", "CNY")
+    price = calculate_price("MT", "BTC", "CNY")
+    print(price)
     # print(price)
+    # print(get_total_graph())
 
 #
