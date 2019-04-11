@@ -52,29 +52,29 @@ def symbol_graph(symbols):
 
 
 def get_total_graph(exchange):
-    graph = r.hget("price_server_graph", exchange)
-    # 看有没有这个交易所的图的缓存
-    if graph:
-        symbols_graph = eval(graph)
-    else:
-        symbols = get_symbols_from_exchange(exchange)
-        symbols_graph = symbol_graph(symbols)
+    # graph = r.hget("price_server_graph", exchange)
+    # # 看有没有这个交易所的图的缓存
+    # if graph:
+    #     symbols_graph = eval(graph)
+    # else:
+    symbols = get_symbols_from_exchange(exchange)
+    symbols_graph = symbol_graph(symbols)
 
-        cu = get_currency_price()
+    cu = get_currency_price()
 
-        for i in cu:
-            coin, currency = i.split("/")
+    for i in cu:
+        coin, currency = i.split("/")
 
-            if coin in symbols_graph.keys():
-                symbols_graph[coin].add(currency)
+        if coin in symbols_graph.keys():
+            symbols_graph[coin].add(currency)
 
-                if currency in symbols_graph.keys():
-                    symbols_graph[currency].add((coin))
-                else:
-                    symbols_graph[currency] = set()
-                    symbols_graph[currency].add(coin)
+            if currency in symbols_graph.keys():
+                symbols_graph[currency].add((coin))
+            else:
+                symbols_graph[currency] = set()
+                symbols_graph[currency].add(coin)
 
-        r.hset("price_server_graph", exchange, str(symbols_graph))
+    r.hset("price_server_graph", exchange, str(symbols_graph))
 
     return symbols_graph
 
