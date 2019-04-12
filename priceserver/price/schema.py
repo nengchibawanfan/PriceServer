@@ -3,9 +3,11 @@ import random
 import graphene
 
 from priceserver.cal_price import calculate_price
+from priceserver.common.db_connection import ConnectRedis
 from priceserver.conf.settings import SYMBOL_LIST, MARKET_LIST, CURRENCY_LIST, PRIORITY
 from priceserver.common.logger import getLog
 
+r = ConnectRedis()
 logger = getLog()
 
 class Price(graphene.ObjectType):
@@ -15,10 +17,16 @@ class Price(graphene.ObjectType):
 
 class Symbol(graphene.ObjectType):
     symbol_name = graphene.String()
+    today = graphene.String()
     price = graphene.List(Price)
 
 def create_symbol_obj(symbol_name, currency):
-    obj = Symbol(symbol_name=symbol_name, price=[create_price_obj(symbol_name, i) for i in currency])
+    if "/" in symbol_name:
+        today = r.hget("price_server_bytetrade_today", symbol_name)
+    else:
+        today = ""
+
+    obj = Symbol(symbol_name=symbol_name, today=today, price=[create_price_obj(symbol_name, i) for i in currency])
 
     return obj
 
@@ -60,7 +68,6 @@ class Query(graphene.ObjectType):
             symbol_list = [i.replace(" ", "") for i in temp]
 
         else:
-            pass
             symbol_list = SYMBOL_LIST
             # symbol_list = MARKET_LIST
             # all 就是我们交易所目前支持的所有的币对

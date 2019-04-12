@@ -110,6 +110,7 @@ class Quote(object):
         # 将收到的symbol计算成 ccxtsymbol
         self.r.publish("price_server_" + "bytetrade_" + ccxt_symbol, data["last"])
         self.r.hset("price_server_bytetrade", ccxt_symbol, data["last"])
+        self.r.hset("price_server_bytetrade_today", ccxt_symbol, str(data["info"]))
 
     def onDeal_huobipro(self, symbol, data):
         # 将收到的symbol计算成 ccxtsymbol
