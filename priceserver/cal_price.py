@@ -83,50 +83,108 @@ def get_total_graph():
 
 
 def search(graph, start, mid, end, path=[]):
-    if mid in graph[start]:
-        if mid in graph[end]:
-            return [start, mid, end]
+    if end in graph[start]:
+        return [start, end]
     else:
-        # 创建搜索队列
-        search_queue = deque()
-        # 初始化搜索队列
-        path = path + [start]
-        print(path)
-        search_queue += [start]
-        # 记录已经搜索过的node
-        searched = []
-        # 只要队列不空就一直搜索
-        next_paths = []
-        while search_queue:
-            # 取出队列中最先加进去的一个node
-            node = search_queue.popleft()
+        if mid in graph[start]:
+            if mid == end:
+                # 中间节点等于结束节点
+                return [start, mid]
+            else:
+                # 中间节点不是结束节点
+                if mid in graph[end]:
+                    return [start, mid, end]
 
-            if not node in searched:
-                # 查看是不是结束点
-                if next_paths:
-                    for p in next_paths:
-                        if p[-1] == node:
-                            next_paths.remove(p)
-                            path = p
+        else:
+            # 创建搜索队列
+            search_queue = deque()
+            # 初始化搜索队列
+            path = path + [start]
+            # print(path)
+            search_queue += [start]
+            # 记录已经搜索过的node
+            searched = []
+            # 只要队列不空就一直搜索
+            next_paths = []
+            while search_queue:
+                # 取出队列中最先加进去的一个node
+                node = search_queue.popleft()
 
-                if node_is_end(node, end, path):
-                    return path
-                else:
-                    # 不是结束,所以将他的点都加入搜索队列
-                    search_queue += graph[node]
-                    # 标记这个点已经被搜索过了
-                    searched.append(node)
-                    # 把这个点和node拼接为路径
-                    temp = []
-                    for i in next_paths:
-                        for j in i:
-                            temp.append(j)
+                if not node in searched:
+                    # 查看是不是结束点
+                    if next_paths:
+                        for p in next_paths:
+                            if p[-1] == node:
+                                next_paths.remove(p)
+                                path = p
 
-                    next_paths = next_paths + [path + [i] for i in graph[node] if i not in temp]
+                    if node_is_end(node, end):
+                        return path
+                    else:
+                        # 不是结束,所以将他的点都加入搜索队列
+                        search_queue += graph[node]
+                        # 标记这个点已经被搜索过了
+                        searched.append(node)
+                        # 把这个点和node拼接为路径
+                        temp = []
+                        for i in next_paths:
+                            for j in i:
+                                temp.append(j)
+
+                        next_paths = next_paths + [path + [i] for i in graph[node] if i not in temp]
     return False
 
 
-def node_is_end(node, end, path):
+def BFS(graph, start, mid, end):
+    # 首先判断能不能直接算出    例如 MT/ETH   ETH/CNY
+    if mid in graph[start]:
+        if mid == end:
+            # 中间节点等于结束节点
+            return [start, mid]
+        else:
+            # 中间节点不是结束节点
+            if mid in graph[end]:
+                return [start, mid, end]
+
+    # 路径不能直接算出，查找路径
+    path = []
+    search_queue = deque()
+    # 初始化搜索队列
+    path = path + [start]
+
+    search_queue += [start]
+    # 记录已经搜索过的node
+    searched = []
+    # 只要队列不空就一直搜索
+
+    while search_queue:
+        # 取出队列中最先加进去的一个node
+        node = search_queue.popleft()
+        # 没有搜索过
+        if not node in searched:
+            # 把该点加入到搜索过的列表
+            searched.append(node)
+            # 查看是不是结束点
+            if node_is_end(node, end):
+                # 是结束点 返回路径
+                return path
+            else:
+                # 不是结束点 将node的子节点全部加入队列
+                search_queue += graph[node]
+
+
+
+
+
+    if mid in graph[start]:
+        # 中间节点有
+        pass
+    else:
+        pass
+
+
+
+def node_is_end(node, end):
     if node == end:
         #
         return True
@@ -136,6 +194,7 @@ def node_is_end(node, end, path):
 
 def cal_price(path):
     # 拼接成交易对
+    # print(path)
     if path:
         symbols = []
         for i in range(len(path)):
@@ -147,22 +206,24 @@ def cal_price(path):
 
         key_bytetrade = "price_server_bytetrade"
         key_huobipro = "price_server_huobipro"
-
+        key_coin_base = "coinbase_currency_price"
         dic = {}
         def get_price(symbol):
             price_bytetrade = r.hget(key_bytetrade, symbol)
             price_huobipro = r.hget(key_huobipro, symbol)
+            price_coinbase = r.hget(key_coin_base, symbol)
 
             if price_bytetrade:
-                price = price_bytetrade
+                price = float(price_bytetrade)
             else:
                 if price_huobipro:
-                    price = price_huobipro
+                    price = float(price_huobipro)
                 else:
-                    return False
-
+                    if price_coinbase:
+                        price = float(price_coinbase)
+                    else:
+                        return False
             return price
-
         for symbol in symbols:
             # 币币价格
             price = get_price(symbol)
@@ -180,13 +241,13 @@ def cal_price(path):
                         dic[symbol] = 1 / float(price)
                 else:
                     dic[symbol] = 0
-
-        if path[-1] in CURRENCY_LIST:
-            cu_price = r.hget("coinbase_currency_price", symbols[-1])
-            if cu_price:
-                dic[symbols[-1]] = cu_price
-            else:
-                dic[symbols[-1]] = 0
+            # print(dic)
+        # if path[-1] in CURRENCY_LIST:
+        #     cu_price = r.hget("coinbase_currency_price", symbols[-1])
+        #     if cu_price:
+        #         dic[symbols[-1]] = cu_price
+        #     else:
+        #         dic[symbols[-1]] = 0
 
         res = 1
         for i in dic.values():
@@ -219,23 +280,23 @@ def calculate_price(start, mid, end):
     except:
         logger.info(f"{start, mid, end}找不到这个路径")
 
-    try:
-        if price == 0:
-            key = start + "_" + mid + "_" + end + "_" + "bytetrade"
-            path = r.hget("price_server_path", key)
-            if path:
-                path = eval(path)
-            else:
-                # 缓存中没有，就计算路径并加入缓存
-                total_graph = get_total_graph()
-                path = search(total_graph, start, mid, end)
-                if mid in path:
-                    r.hset("price_server_path", key, str(path))
-            price = cal_price(path)
-        else:
-            price = price
-    except:
-        price = 0
+    # try:
+    #     if price == 0:
+    #         key = start + "_" + mid + "_" + end
+    #         path = r.hget("price_server_path", key)
+    #         if path:
+    #             path = eval(path)
+    #         else:
+    #             # 缓存中没有，就计算路径并加入缓存
+    #             total_graph = get_total_graph()
+    #             path = search(total_graph, start, mid, end)
+    #             if mid in path:
+    #                 r.hset("price_server_path", key, str(path))
+    #         price = cal_price(path)
+    #     else:
+    # #         price = price
+    # except:
+    #     price = 0
 
     return price
 
@@ -248,19 +309,26 @@ if __name__ == '__main__':
     # # exchange = "huobipro"
     # print(total_graph)
     # # # t1 = time.time()
-    # path = search(total_graph, "MT", "BTC", "CNY")
     # print(path)
     # # t2 = time.time()
     # # print(t2 - t1)
     # print(path)
-    # price = cal_price(exchange, path)
-    price1 = calculate_price("MT", "BTC", "CNY")
-    t1 = time.time()
-    price2 = calculate_price("CMT", "BTC", "CNY")
-    t2 = time.time()
-    print(f"time{t2 - t1}")
+    # price = cal_price(['HLB', 'USD'])
+    # print(get_total_graph())
+    # price1 = calculate_price("HLB", "ETH", "CNY")
+    # t1 = time.time()
+    # price2 = calculate_price("HLB", "BTC", "GBP")
+    # price2 = calculate_price("HLB", "BTC", "USD")
+    price2 = calculate_price("HLB", "BTC", "CNY")
     print(price2)
+    # t2 = time.time()
+    # print(f"time{t2 - t1}")
+    # print(price2)
     # print(price)
     # print(get_total_graph())
+    # path = search(get_total_graph(), "HLB", "BTC", "USD")
+    # print(path)
+    pass
+
 
 #
