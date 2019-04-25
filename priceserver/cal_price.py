@@ -277,8 +277,11 @@ def calculate_price(start, mid, end):
         price = cal_price(path)
         # else:
         #     price = price
+        return price
+
     except:
         logger.info(f"{start, mid, end}找不到这个路径")
+        return 0
 
     # try:
     #     if price == 0:
@@ -298,7 +301,6 @@ def calculate_price(start, mid, end):
     # except:
     #     price = 0
 
-    return price
 
 
 if __name__ == '__main__':
