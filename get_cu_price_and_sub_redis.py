@@ -183,6 +183,9 @@ if __name__ == '__main__':
     r = ConnectRedis()
     r.delete("price_server_bytetrade")
     r.delete("price_server_huobipro")
+
+    # HLB/USD       写死
+    r.hset("price_server_bytetrade", "HLB/USD", "0.0001486")
     # 用来维护兑换法币的redis hash
     q = Quote()
     q.get_price_by_rest()
