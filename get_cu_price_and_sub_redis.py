@@ -145,9 +145,14 @@ class Quote(object):
                 else:
                     huobi_sub_symbols.append(j)
         # 订阅火币所有的交易对
+        huobipro = ccxt.huobipro()
+        res = huobipro.fetch_tickers()
 
-        for symbol in huobi_sub_symbols:
-            self.hb.subscribeDeals(symbol, self.onDeal_huobipro)
+        for stock in huobi_sub_symbols:
+            for h_symbol, v in res.items():
+                if h_symbol in [stock + "/ETH", stock + "/BTC"]:
+                    ccxt_symbol = h_symbol
+                    self.hb.subscribeDeals(ccxt_symbol, self.onDeal_huobipro)
         logger.info("订阅火币各个交易对成交价格")
 
     def getMarketInfos(self):
@@ -189,7 +194,6 @@ class Quote(object):
         for stock in stock_symbol:
             for h_symbol, v in res.items():
                 if h_symbol in [stock + "/ETH", stock + "/BTC"]:
-                    print(h_symbol)
                     ccxt_symbol = h_symbol
                     self.r.publish("price_server_" + "huobipro_" + ccxt_symbol, v["close"])
                     self.r.hset("price_server_huobipro", ccxt_symbol, v["close"])
