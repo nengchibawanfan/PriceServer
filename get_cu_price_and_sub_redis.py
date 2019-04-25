@@ -15,7 +15,7 @@ from priceserver.common.logger import getLog
 from priceserver.common.db_connection import ConnectRedis
 from priceserver.conf.settings import HUOBIPRO_API, COIN_BASE_URL, BYTETRADE_API, COIN_CURRENCY, CURRENCY_LIST
 
-moneyLst = CURRENCY_LIST   # 法币的种类
+moneyLst = CURRENCY_LIST  # 法币的种类
 logger = getLog()
 
 
@@ -29,10 +29,13 @@ class Quote(object):
         self.bt = bytetrade()
         self.hb = huobipro()
         # 获取交易界面上的交易对，
-        # response              3/2             BTC/ETH              {35: CMT}
+        # 接口返回信息
         self.response_symbols = None
+        # 交易所目前的市场  3/2
         self.markets = None
+        # 交易所支持的市场名称   ETH/BTC
         self.marketNames = None
+        # 市场id与市场name映射
         self.marketId_ccxtsymbol_mapping = None
         self.getMarketInfos()
 
@@ -133,30 +136,37 @@ class Quote(object):
         self.hb.start()
         huobipro_symbols = self.get_huobipro_symbols()
         # 我们有并且火币也有的交易对
+
         huobi_sub_symbols = []
-        stock_symbol = [i.split("/")[0] for i in self.marketNames]
-        for stock in stock_symbol:
-            for h_symbol in huobipro_symbols:
-                if h_symbol in [stock + "/ETH", stock + "/BTC"]:
-                    huobi_sub_symbols.append(h_symbol)
+        for i in self.marketNames:
+            for j in i.split("/"):
+                if j in huobi_sub_symbols:
+                    pass
+                else:
+                    huobi_sub_symbols.append(j)
         # 订阅火币所有的交易对
+
         for symbol in huobi_sub_symbols:
             self.hb.subscribeDeals(symbol, self.onDeal_huobipro)
         logger.info("订阅火币各个交易对成交价格")
 
     def getMarketInfos(self):
         # 获取交易所正在进行的市场
-        logger.info("正在获取Market，MarketName，marketId与ccxtSymbol映射等信息")
+        logger.info("正在获取目前交易所支持的 Market，MarketName，marketId与ccxtSymbol映射等信息")
         url = BYTETRADE_API + "?cmd=marketsPrice"
         res = eval(requests.get(url).content.decode("utf-8"))
 
         markets = [str(i["stockId"]) + "/" + str(i["moneyId"]) for i in res["result"]]  # "3/2"
-        marketNames = [i["name"] for i in res["result"]]  # "CMT/KCASH"
+        marketNames = [i["name"] for i in res["result"]]    # "CMT/KCASH"
         res_symbols = res["result"]
         coinId_ccxtsymbol_mapping = {str(i["id"]): i["name"] for i in res["result"]}
+        # 接口返回信息
         self.response_symbols = res_symbols
+        # 交易所目前的市场  3/2
         self.markets = markets
+        # 交易所支持的市场名称
         self.marketNames = marketNames
+        # 市场id与市场name映射
         self.marketId_ccxtsymbol_mapping = coinId_ccxtsymbol_mapping
 
     def get_price_by_rest(self):
@@ -165,27 +175,37 @@ class Quote(object):
             ccxt_symbol = info["name"]
             self.r.publish("price_server_" + "bytetrade_" + ccxt_symbol, info["today"]["last"])
             self.r.hset("price_server_bytetrade", ccxt_symbol, info["today"]["last"])
+
+        stock_symbol = []
+        for i in self.marketNames:
+            for j in i.split("/"):
+                if j in stock_symbol:
+                    pass
+                else:
+                    stock_symbol.append(j)
+
         huobipro = ccxt.huobipro()
         res = huobipro.fetch_tickers()
-
-        stock_symbol = [i.split("/")[0] for i in self.marketNames]
         for stock in stock_symbol:
             for h_symbol, v in res.items():
                 if h_symbol in [stock + "/ETH", stock + "/BTC"]:
+                    print(h_symbol)
                     ccxt_symbol = h_symbol
                     self.r.publish("price_server_" + "huobipro_" + ccxt_symbol, v["close"])
                     self.r.hset("price_server_huobipro", ccxt_symbol, v["close"])
-
-
 
 if __name__ == '__main__':
     # 开始的时候将原来的键删掉，构建新的  一旦加了新的交易对，重启程序
     r = ConnectRedis()
     r.delete("price_server_bytetrade")
     r.delete("price_server_huobipro")
+    r.delete("price_server_path")
+    logger.info("删除bytetrade，huobipro的价格缓存，删除路径缓存")
 
     # HLB/USD       写死
     r.hset("price_server_bytetrade", "HLB/USD", "0.0001486")
+    logger.info("将 HLB/USD 价格写死为0.0001486")
+
     # 用来维护兑换法币的redis hash
     q = Quote()
     q.get_price_by_rest()
