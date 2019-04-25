@@ -35,3 +35,4 @@ while True:
         cmd_str = 'pm2 restart ' + "get_cu_price_and_sub_redis"
 
         result = os.system(cmd_str)
+    time.sleep(60 * 3)
