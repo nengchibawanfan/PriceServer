@@ -105,6 +105,7 @@ class Quote(object):
         subscribe的回调函数   将data写入到redis中
         :return:
         """
+        self.r.set("Receive_the_data_bytetrade", time.time())
         s = self.cal_market_id(symbol)
         ccxt_symbol = self.cal_ccxt_symbol(s)
         # 将收到的symbol计算成 ccxtsymbol
@@ -114,6 +115,7 @@ class Quote(object):
 
     def onDeal_huobipro(self, symbol, data):
         # 将收到的symbol计算成 ccxtsymbol
+        self.r.set("Receive_the_data_huobi", time.time())
 
         self.r.publish("price_server_" + "huobipro_" + str(symbol), data[0]["info"]["price"])
         self.r.hset("price_server_huobipro", symbol, data[0]["info"]["price"])
