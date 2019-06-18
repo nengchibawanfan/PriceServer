@@ -179,8 +179,12 @@ class Quote(object):
         # restful查一下最新的成交价格
         for info in self.response_symbols:
             ccxt_symbol = info["name"]
-            self.r.publish("price_server_" + "bytetrade_" + ccxt_symbol, info["today"]["last"])
-            self.r.hset("price_server_bytetrade", ccxt_symbol, info["today"]["last"])
+            print(info)
+            if info["stockId"] == 35:
+                pass
+            else:
+                # self.r.publish("price_server_" + "bytetrade_" + ccxt_symbol, info["today"]["last"])
+                self.r.hset("price_server_bytetrade", ccxt_symbol, info["today"]["last"])
 
         stock_symbol = []
         for i in self.marketNames:
@@ -221,6 +225,7 @@ if __name__ == '__main__':
     r = ConnectRedis()
     r.delete("price_server_bytetrade")
     r.delete("price_server_huobipro")
+    r.delete("price_server_bytetrade_today")
     r.delete("price_server_path")
     logger.info("删除bytetrade，huobipro的价格缓存，删除路径缓存")
 
