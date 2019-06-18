@@ -91,7 +91,7 @@ class Query(graphene.ObjectType):
         pass
 
     all_today = graphene.List(Today)
-    def resolve_all_today(self):
+    def resolve_all_today(self, info):
         response = []
         res = r.hgetall("price_server_bytetrade_today")
         for k, v in res.items:
