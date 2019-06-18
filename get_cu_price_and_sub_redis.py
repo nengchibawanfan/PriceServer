@@ -180,7 +180,7 @@ class Quote(object):
         for info in self.response_symbols:
             ccxt_symbol = info["name"]
             print(info)
-            if info["stockId"] == 35:
+            if info["stockId"] or info["moneyId"] == 35:
                 pass
             else:
                 # self.r.publish("price_server_" + "bytetrade_" + ccxt_symbol, info["today"]["last"])
