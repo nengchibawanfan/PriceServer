@@ -179,7 +179,6 @@ class Quote(object):
         # restful查一下最新的成交价格
         for info in self.response_symbols:
             ccxt_symbol = info["name"]
-            print(info)
             if info["stockId"] or info["moneyId"] == 35:
                 pass
             else:
