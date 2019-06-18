@@ -94,7 +94,7 @@ class Query(graphene.ObjectType):
     def resolve_all_today(self, info):
         response = []
         res = r.hgetall("price_server_bytetrade_today")
-        for k, v in res.items:
+        for k, v in res.items():
             obj = Today(symbol_name=k, today=v)
             response.append(obj)
         return response
