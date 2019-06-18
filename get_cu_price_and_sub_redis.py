@@ -159,7 +159,7 @@ class Quote(object):
     def getMarketInfos(self):
         # 获取交易所正在进行的市场
         logger.info("正在获取目前交易所支持的 Market，MarketName，marketId与ccxtSymbol映射等信息")
-        url = BYTETRADE_API + "?cmd=marketsPrice"
+        url = BYTETRADE_API + "?cmd=marketsPrice&channel=all"
         res = eval(requests.get(url).content.decode("utf-8"))
 
         markets = [str(i["stockId"]) + "/" + str(i["moneyId"]) for i in res["result"]]  # "3/2"
