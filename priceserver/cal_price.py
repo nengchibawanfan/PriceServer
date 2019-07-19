@@ -3,9 +3,6 @@
 # Date: 2019/3/14
 # Desc: 获取各个交易所的symbol的图并计算路径和价格
 import sys
-import time
-
-from collections import deque
 
 sys.path.append("..")
 
@@ -245,6 +242,8 @@ if __name__ == '__main__':
     # print(t2 - t1)
     #
     # pass
+    r = ConnectRedis()
+    r.delete("price_server_path")
     from priceserver.conf.settings import SYMBOL_LIST, CURRENCY_LIST
     for i in SYMBOL_LIST:
         for j in CURRENCY_LIST:
