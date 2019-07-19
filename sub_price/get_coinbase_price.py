@@ -70,23 +70,7 @@ class Quote(object):
 if __name__ == '__main__':
     # 开始的时候将原来的键删掉，构建新的  一旦加了新的交易对，重启程序
 
-    def push_bear():
-        PUSH_BEAR_KEY = "11970-ba5f3d1644a4bd880a04ebdef3560f69"
-        import requests
-        url = "https://pushbear.ftqq.com/sub"
-        data = {
-            "sendkey": PUSH_BEAR_KEY,
-            "text": "PriceServer——GraphQL",
-            "desp": "coin_base数据获取超时五分钟"
-        }
-        headers = {
-            "Accept": "application/json, text/javascript, */*; q=0.01",
-            "Accept-Encoding": "gzip, deflate, br",
-            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0"}
-        requests.post(url, data=data, headers=headers)
 
-
-    push_bear()
     r = ConnectRedis()
 
     r.delete("coinbase_currency_price")
