@@ -53,6 +53,7 @@ class Quote(object):
                 k = symbol["base"] + "/" + symbol["currency"]
                 price = symbol["latest"]
                 # 将value写入到redis中
+                print(k, price)
                 self.r.hset("coinbase_currency_price", k, price)
         self.r.set("Receive_the_data_coinbase", time.time())
 
@@ -77,7 +78,7 @@ if __name__ == '__main__':
 
     obj = Quote()
 
-    schedule.every(5).minutes.do(obj.start)
+    schedule.every(2).minutes.do(obj.start)
 
     while True:
         # try:
