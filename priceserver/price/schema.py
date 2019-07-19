@@ -2,9 +2,9 @@ import random
 
 import graphene
 
-from priceserver.cal_price import calculate_price
+from priceserver.cal_price import calprice
 from priceserver.common.db_connection import ConnectRedis
-from priceserver.conf.settings import SYMBOL_LIST, MARKET_LIST, CURRENCY_LIST, PRIORITY
+from priceserver.conf.settings import SYMBOL_LIST, CURRENCY_LIST
 from priceserver.common.logger import getLog
 
 r = ConnectRedis()
@@ -40,14 +40,15 @@ def create_symbol_obj(symbol_name, currency):
 def create_price_obj(symbol_name, currency):
 
     if "/" in symbol_name:
+
         symbol = symbol_name
+        start, mid = symbol.split("/")
+        price = calprice.calculate_price(start, currency, mid)
+
     else:
         # 优先计算兑ETH
-        symbol = symbol_name + "/" + PRIORITY[0]
+        price = calprice.calculate_price(symbol_name, currency)
 
-
-    start, mid = symbol.split("/")
-    price = calculate_price(start, mid, currency)
     # price = random.randrange(1000)
     obj = Price(currency=currency, price=price)
     return obj

@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 # Author: zhangchao
-# Date: 2019-04-25
-# Desc: 监控wss是否获取数据
+# Date: 2019-07-18
+# Desc: 监控获取价格是否正常，不正常，就重启
+
+
 import os
 
 import redis
 import time
 
 r = redis.StrictRedis(decode_responses=True)
-
-
 
 while True:
     now = time.time()
@@ -22,17 +22,17 @@ while True:
     coinbase = now - coinbase_data
 
     if bytetrade > 60 * 5:
-        cmd_str = 'pm2 restart ' + "get_cu_price_and_sub_redis"
+        cmd_str = 'pm2 restart ' + "sub_bytetrade_price"
 
         result = os.system(cmd_str)
 
     if huobi > 60 * 5:
-        cmd_str = 'pm2 restart ' + "get_cu_price_and_sub_redis"
+        cmd_str = 'pm2 restart ' + "sub_huobi_price"
 
         result = os.system(cmd_str)
 
     if coinbase > 60 * 5:
-        cmd_str = 'pm2 restart ' + "get_cu_price_and_sub_redis"
+        cmd_str = 'pm2 restart ' + "get_coinbase_price"
 
         result = os.system(cmd_str)
     time.sleep(60 * 3)

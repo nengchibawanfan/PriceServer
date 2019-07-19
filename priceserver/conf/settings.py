@@ -9,8 +9,11 @@ PUSH_BEAR_KEY = "11970-ba5f3d1644a4bd880a04ebdef3560f69"
 
 def get_symbol_list():
     import requests
-    url = BYTETRADE_API + "?cmd=marketsPrice"
-    res = eval(requests.get(url).content.decode("utf-8"))
+    params = {
+        "cmd": "marketsPrice",
+        "channel": "all"
+    }
+    res = eval(requests.get(BYTETRADE_API, params).content.decode("utf-8"))
     # marketNames = [i["name"] for i in res["symbols"] if i["money"] and i["stock"] != "BTT"]  # "CMT/KCASH"
     marketNames = [i["name"] for i in res["result"]]  # "CMT/KCASH"
     symbolNames = []  # "CMT/KCASH"
