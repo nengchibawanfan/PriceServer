@@ -29,7 +29,7 @@ def create_symbol_obj(symbol_name, currency):
 
     if "/" in symbol_name:
         # 看是MT/ETH这种,还是MT这种    获取这个的today 勇哥那边就不需要再查了
-        today = r.hget("price_server_bytetrade_today", symbol_name)
+        today = r.hget("price_server_bytetrade_today1", symbol_name)
     else:
         today = ""
 
@@ -94,7 +94,7 @@ class Query(graphene.ObjectType):
     all_today = graphene.List(Today)
     def resolve_all_today(self, info):
         response = []
-        res = r.hgetall("price_server_bytetrade_today")
+        res = r.hgetall("price_server_bytetrade_today1")
         for k, v in res.items():
             obj = Today(symbol_name=k, today=v)
             response.append(obj)
