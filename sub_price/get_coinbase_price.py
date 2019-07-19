@@ -77,7 +77,7 @@ if __name__ == '__main__':
 
     obj = Quote()
 
-    schedule.every(5).minutes.do(obj.start, "5min")
+    schedule.every(5).minutes.do(obj.start)
 
     while True:
         # try:
