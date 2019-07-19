@@ -4,8 +4,9 @@
 # Desc: 监控获取价格是否正常，不正常，就重启
 
 
+import sys
+sys.path.append("..")
 import os
-
 import redis
 import time
 

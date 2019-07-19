@@ -2,7 +2,9 @@
 # Author: zhangchao
 # Date: 2019-07-18
 # Desc: 获取coin兑换法币的价格
+import sys
 
+sys.path.append("..")
 
 import time
 

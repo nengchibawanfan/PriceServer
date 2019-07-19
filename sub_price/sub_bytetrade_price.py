@@ -3,7 +3,9 @@
 # Date: 2019-07-18
 # Desc:
 
+import sys
 
+sys.path.append("..")
 import time
 
 import redis
