@@ -48,7 +48,6 @@ class Quote(object):
     def updateQuote(self, base):
         # 所有的法币名称
         response = eval(self.sendRequest(base))
-        print(response)
         for symbol in response["data"]:
             if symbol["base"] in COIN_CURRENCY:
                 k = symbol["base"] + "/" + symbol["currency"]
