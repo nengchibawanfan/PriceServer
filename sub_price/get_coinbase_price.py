@@ -11,7 +11,7 @@ import time
 import requests
 import schedule
 
-from retry import retry
+# from retry import retry
 from multiprocessing.dummy import Pool
 
 from priceserver.common.logger import getLog
@@ -30,7 +30,7 @@ class Quote(object):
         self.coinbase_api = COIN_BASE_URL + "v2/assets/summary"
         self.pool = Pool(20)
 
-    @retry(10, 3)
+    # @retry(10, 3)
     def sendRequest(self, base):
         """
         构建请求并发送
@@ -94,7 +94,7 @@ if __name__ == '__main__':
 
     obj = Quote()
 
-    schedule.every(5).minutes.do(obj.start(), "5min")
+    schedule.every(5).minutes.do(obj.start, "5min")
 
     while True:
         # try:
