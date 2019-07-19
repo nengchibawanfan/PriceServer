@@ -176,7 +176,7 @@ class CalPrice(object):
     def calculate_price(self, start, end, mid=None):
         # 从缓存中获取路径
 
-        # try:
+        try:
             if mid:
                 key = start + "_" + mid + "_" + end
                 path = self.r.hget("price_server_path", key)
@@ -201,9 +201,9 @@ class CalPrice(object):
             print(price)
             return price
 
-        # except:
-        #     logger.info(f"{start, end, mid}找不到这个路径")
-        #     return 0
+        except:
+            logger.info(f"{start, end, mid}找不到这个路径")
+            return 0
 
 
 calprice = CalPrice()
