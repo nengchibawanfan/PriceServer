@@ -176,7 +176,7 @@ class CalPrice(object):
     def calculate_price(self, start, end, mid=None):
         # 从缓存中获取路径
 
-        try:
+        # try:
             if mid:
                 key = start + "_" + mid + "_" + end
                 path = self.r.hget("price_server_path", key)
@@ -198,11 +198,12 @@ class CalPrice(object):
                 self.r.hset("price_server_path", key, str(path))
             print(path)
             price = self.cal_price(path)
+            print(price)
             return price
 
-        except:
-            logger.info(f"{start, mid, end}找不到这个路径")
-            return 0
+        # except:
+        #     logger.info(f"{start, end, mid}找不到这个路径")
+        #     return 0
 
 
 calprice = CalPrice()
@@ -243,13 +244,13 @@ if __name__ == '__main__':
     #
     # pass
     r = ConnectRedis()
-    r.delete("price_server_path")
+    # r.delete("price_server_path")
     from priceserver.conf.settings import SYMBOL_LIST, CURRENCY_LIST
     for i in SYMBOL_LIST:
         for j in CURRENCY_LIST:
 
             price = calprice.calculate_price(i, j)
-            print(price)
+            # print(price)
     # t2 = time.time()
     # print(t2 - t1)
     # print(price)
