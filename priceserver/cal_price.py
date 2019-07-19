@@ -196,9 +196,9 @@ class CalPrice(object):
                     path = self.search(self.get_symbols(), start, end)
 
                 self.r.hset("price_server_path1", key, str(path))
-            print(path)
+            # print(path)
             price = self.cal_price(path)
-            print(price)
+            # print(price)
             return price
 
         except:
