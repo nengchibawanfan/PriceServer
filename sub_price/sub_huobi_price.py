@@ -49,10 +49,10 @@ class Quote(object):
     def onDeal_huobipro(self, symbol, data):
         print(data)
         # 将收到的symbol计算成 ccxtsymbol
-        self.r.set("Receive_the_data_huobi", time.time())
+        self.r.set("Receive_the_data_huobi1", time.time())
 
         # self.r.publish("price_server_" + "huobipro_" + str(symbol), data[0]["info"]["price"])
-        self.r.hset("price_server_huobipro", symbol, data[0]["info"]["price"])
+        self.r.hset("price_server_huobipro1", symbol, data[0]["info"]["price"])
 
     def subscribeAllTicker(self):
         """
@@ -104,8 +104,8 @@ class Quote(object):
         res = huobipro.fetch_tickers()
         for h_symbol, v in res.items():
             if h_symbol in common_symbols or h_symbol in ["ETH/USDT", "BTC/USDT"]:
-                self.r.hset("price_server_huobipro", h_symbol, v["close"])
-        self.r.set("Receive_the_data_huobi", time.time())
+                self.r.hset("price_server_huobipro1", h_symbol, v["close"])
+        self.r.set("Receive_the_data_huobi1", time.time())
 
 
 if __name__ == '__main__':
@@ -127,9 +127,9 @@ if __name__ == '__main__':
         requests.post(url, data=data, headers=headers)
 
 
-    push_bear()
+    # push_bear()
     r = ConnectRedis()
-    r.delete("price_server_huobipro")
+    # r.delete("price_server_huobipro")
 
     # 用来维护兑换法币的redis hash
     q = Quote()

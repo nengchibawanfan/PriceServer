@@ -76,11 +76,11 @@ class CalPrice(object):
         :param exchange_name: 交易所名称，huobipro， bytetrade
         :return: 交易所支持的币对的列表
         """
-        redis_key_huobi = "price_server_huobipro"
-        redis_key_bytetrade = "price_server_bytetrade"
+        redis_key_huobi = "price_server_huobipro1"
+        redis_key_bytetrade = "price_server_bytetrade1"
         symbols_huibo = list(self.r.hgetall(redis_key_huobi).keys())
         symbols_bytetrade = list(self.r.hgetall(redis_key_bytetrade).keys())
-        res = list(self.r.hgetall("coinbase_currency_price"))
+        res = list(self.r.hgetall("coinbase_currency_price1"))
 
         symbols = list(set(symbols_huibo + symbols_bytetrade + res))
         return symbols
@@ -97,9 +97,9 @@ class CalPrice(object):
                     symbol = path[i] + "/" + path[i + 1]
                     symbols.append(symbol)
 
-            key_bytetrade = "price_server_bytetrade"
-            key_huobipro = "price_server_huobipro"
-            key_coin_base = "coinbase_currency_price"
+            key_bytetrade = "price_server_bytetrade1"
+            key_huobipro = "price_server_huobipro1"
+            key_coin_base = "coinbase_currency_price1"
             dic = {}
 
             def get_price(symbol):
@@ -179,11 +179,11 @@ class CalPrice(object):
         try:
             if mid:
                 key = start + "_" + mid + "_" + end
-                path = self.r.hget("price_server_path", key)
+                path = self.r.hget("price_server_path1", key)
 
             else:
                 key = start + "_" + end
-                path = self.r.hget("price_server_path", key)
+                path = self.r.hget("price_server_path1", key)
 
             if path:
                 path = eval(path)
@@ -195,7 +195,7 @@ class CalPrice(object):
                 else:
                     path = self.search(self.get_symbols(), start, end)
 
-                self.r.hset("price_server_path", key, str(path))
+                self.r.hset("price_server_path1", key, str(path))
             print(path)
             price = self.cal_price(path)
             print(price)

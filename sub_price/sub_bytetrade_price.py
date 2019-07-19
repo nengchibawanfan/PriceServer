@@ -50,15 +50,15 @@ class Quote(object):
         subscribe的回调函数   将data写入到redis中
         :return:
         """
-        self.r.set("Receive_the_data_bytetrade", time.time())
+        self.r.set("Receive_the_data_bytetrade1", time.time())
         s = self.cal_market_id(symbol)
         ccxt_symbol = self.cal_ccxt_symbol(s)
         print(data)
         # 将收到的symbol计算成 ccxtsymbol
-        self.r.publish("price_server_" + "bytetrade_" + ccxt_symbol, data["last"])
-        self.r.hset("price_server_bytetrade", ccxt_symbol, data["last"])
-        self.r.hset("price_server_bytetrade_today", ccxt_symbol, str(data["info"]))
-        self.r.set("Receive_the_data_bytetrade", time.time())
+        # self.r.publish("price_server_" + "bytetrade_" + ccxt_symbol, data["last"])
+        self.r.hset("price_server_bytetrade1", ccxt_symbol, data["last"])
+        self.r.hset("price_server_bytetrade_today1", ccxt_symbol, str(data["info"]))
+        self.r.set("Receive_the_data_bytetrade1", time.time())
 
 
 
@@ -97,7 +97,7 @@ class Quote(object):
             if info["stockId"] or info["moneyId"] == 35:
                 pass
             else:
-                self.r.hset("price_server_bytetrade", ccxt_symbol, info["today"]["last"])
+                self.r.hset("price_server_bytetrade1", ccxt_symbol, info["today"]["last"])
 
 
 if __name__ == '__main__':
@@ -119,14 +119,14 @@ if __name__ == '__main__':
         requests.post(url, data=data, headers=headers)
 
 
-    push_bear()
+    # push_bear()
     r = ConnectRedis()
-    r.delete("price_server_bytetrade_today")
-    r.delete("price_server_bytetrade")
+    # r.delete("price_server_bytetrade_today")
+    # r.delete("price_server_bytetrade")
 
 
     # HLB/USD       写死
-    r.hset("price_server_bytetrade", "HLB/USD", "0.0001486")
+    r.hset("price_server_bytetrade1", "HLB/USD", "0.0001486")
     logger.info("将 HLB/USD 价格写死为0.0001486")
 
     # 用来维护兑换法币的redis hash

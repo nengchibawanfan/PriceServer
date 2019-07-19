@@ -54,14 +54,14 @@ class Quote(object):
                 price = symbol["latest"]
                 # 将value写入到redis中
                 print(k, price)
-                self.r.hset("coinbase_currency_price", k, price)
+                self.r.hset("coinbase_currency_price1", k, price)
 
     def start(self):
         """
         维持quote字典最新
         :return:
         """
-        self.r.set("Receive_the_data_coinbase", time.time())
+        self.r.set("Receive_the_data_coinbase1", time.time())
         logger.info("更新法币价格")
         self.pool.map(self.updateQuote, moneyLst)
         self.pool.close()
@@ -73,8 +73,6 @@ if __name__ == '__main__':
 
 
     r = ConnectRedis()
-
-    r.delete("coinbase_currency_price")
 
     obj = Quote()
 

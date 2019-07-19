@@ -14,9 +14,9 @@ r = redis.StrictRedis(decode_responses=True)
 
 while True:
     now = time.time()
-    bytetrade_data = float(r.get("Receive_the_data_bytetrade"))
-    huobi_data = float(r.get("Receive_the_data_huobi"))
-    coinbase_data = float(r.get("Receive_the_data_coinbase"))
+    bytetrade_data = float(r.get("Receive_the_data_bytetrade1"))
+    huobi_data = float(r.get("Receive_the_data_huobi1"))
+    coinbase_data = float(r.get("Receive_the_data_coinbase1"))
 
     bytetrade = now - bytetrade_data
     huobi = now - huobi_data
