@@ -2,8 +2,7 @@
 # Author: zhangchao
 # Date: 2019-07-18
 # Desc: 监控获取价格是否正常，不正常，就重启
-
-
+import datetime
 import sys
 sys.path.append("..")
 import os
@@ -26,14 +25,25 @@ while True:
         cmd_str = 'pm2 restart ' + "sub_bytetrade_price"
 
         result = os.system(cmd_str)
+        print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        print("重启bytetrade")
+
 
     if huobi > 60 * 5:
         cmd_str = 'pm2 restart ' + "sub_huobi_price"
 
         result = os.system(cmd_str)
+        print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
+        print("重启huobipro")
+
 
     if coinbase > 60 * 5:
         cmd_str = 'pm2 restart ' + "get_coinbase_price"
 
         result = os.system(cmd_str)
+        print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
+        print("重启coinbase")
+
     time.sleep(60 * 3)
