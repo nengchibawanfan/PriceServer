@@ -30,6 +30,7 @@ class Quote(object):
         self.coinbase_api = COIN_BASE_URL + "v2/assets/summary"
         self.pool = Pool(20)
 
+
     # @retry(10, 3)
     def sendRequest(self, base):
         """
@@ -63,9 +64,9 @@ class Quote(object):
         """
         self.r.set("Receive_the_data_coinbase1", time.time())
         logger.info("更新法币价格")
-        self.pool.map(self.updateQuote, moneyLst)
-        self.pool.close()
-        self.pool.join()
+        for base in moneyLst:
+            # 所有的法币名称
+            self.pool.apply_async(self.updateQuote, (base,))
 
 
 if __name__ == '__main__':
@@ -76,8 +77,7 @@ if __name__ == '__main__':
 
     obj = Quote()
 
-    schedule.every(2).minutes.do(obj.start)
 
     while True:
-        # try:
-        schedule.run_pending()
+        obj.start()  # 维护法币的价格
+        time.sleep(60 * 2)
