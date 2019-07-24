@@ -77,13 +77,13 @@ class Quote(object):
         url = BYTETRADE_API + "?cmd=marketsPrice&channel=all"
         res = eval(requests.get(url).content.decode("utf-8"))
 
-        markets = [str(i["stockId"]) + "/" + str(i["moneyId"]) for i in res["result"]]  # "3/2"
-        marketNames = [i["name"] for i in res["result"]]  # "CMT/KCASH"
+        markets = [str(i["stockId"]) + "/" + str(i["moneyId"]) for i in res["result"] if i["moneyId"] != 1]  # "3/2"
+        marketNames = [i["name"] for i in res["result"] if i["moneyId"] != 1]  # "CMT/KCASH"
         res_symbols = res["result"]
         coinId_ccxtsymbol_mapping = {str(i["id"]): i["name"] for i in res["result"]}
         # 接口返回信息
         self.response_symbols = res_symbols
-        # 交易所目前的市场  3/2
+        # 交易所目前的市场  3/2  除了／1   btt
         self.markets = markets
         # 交易所支持的市场名称
         self.marketNames = marketNames
@@ -94,10 +94,18 @@ class Quote(object):
         # restful查一下最新的成交价格
         for info in self.response_symbols:
             ccxt_symbol = info["name"]
-            if info["stockId"] or info["moneyId"] == 35:
+            if info["stockId"] == 35:
                 pass
+            if info["moneyId"] == 1:
+
+                print("=")
             else:
-                self.r.hset("price_server_bytetrade1", ccxt_symbol, info["today"]["last"])
+                print(ccxt_symbol)
+                print(info)
+                try:
+                    self.r.hset("price_server_bytetrade1", ccxt_symbol, info["today"]["last"])
+                except:
+                    pass
 
 
 if __name__ == '__main__':
@@ -122,7 +130,7 @@ if __name__ == '__main__':
     # push_bear()
     r = ConnectRedis()
     # r.delete("price_server_bytetrade_today")
-    # r.delete("price_server_bytetrade")
+    r.delete("price_server_bytetrade1")
 
 
     # HLB/USD       写死
