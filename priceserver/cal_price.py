@@ -66,9 +66,12 @@ def set_node_map(node_map, node, node_list, path_map):
 
 
 class CalPrice(object):
-    def __init__(self):
+    def __init__(self, bytetrade_price, huobi_price, coinbase_price):
         # 初始化图
         self.r = ConnectRedis()
+        self.bytetrade_price = bytetrade_price
+        self.huobi_price = huobi_price
+        self.coinbase_price = coinbase_price
 
     def get_symbols(self):
         """
@@ -97,15 +100,15 @@ class CalPrice(object):
                     symbol = path[i] + "/" + path[i + 1]
                     symbols.append(symbol)
 
-            key_bytetrade = "price_server_bytetrade1"
-            key_huobipro = "price_server_huobipro1"
-            key_coin_base = "coinbase_currency_price1"
             dic = {}
 
             def get_price(symbol):
-                price_bytetrade = self.r.hget(key_bytetrade, symbol)
-                price_huobipro = self.r.hget(key_huobipro, symbol)
-                price_coinbase = self.r.hget(key_coin_base, symbol)
+                # price_bytetrade = self.r.hget(key_bytetrade, symbol)
+                # price_huobipro = self.r.hget(key_huobipro, symbol)
+                # price_coinbase = self.r.hget(key_coin_base, symbol)
+                price_bytetrade = self.bytetrade_price.get(symbol, 0)
+                price_huobipro = self.huobi_price.get(symbol, 0)
+                price_coinbase = self.coinbase_price.get(symbol, 0)
 
                 if price_bytetrade and price_bytetrade != 0:
                     price = float(price_bytetrade)
@@ -206,9 +209,8 @@ class CalPrice(object):
             return 0
 
 
-calprice = CalPrice()
-
 if __name__ == '__main__':
+    pass
     # symbols = get_symbols_from_exchange("bytetrade")
     # total_graph = get_total_graph("huobipro")
     # total_graph = get_total_graph("bytetrade")
@@ -243,12 +245,12 @@ if __name__ == '__main__':
     # print(t2 - t1)
     #
     # pass
-    from priceserver.conf.settings import CURRENCY_LIST
+    # from priceserver.conf.settings import CURRENCY_LIST
 
-    r = ConnectRedis()
-    for i in CURRENCY_LIST:
-        key = "HLB_" + i
-        r.hdel("price_server_path1", key)
+    # r = ConnectRedis()
+    # for i in CURRENCY_LIST:
+    #     key = "HLB_" + i
+    #     r.hdel("price_server_path1", key)
     # r.delete("price_server_path1")
     # for i in SYMBOL_LIST:
     #     for j in CURRENCY_LIST:
@@ -257,7 +259,10 @@ if __name__ == '__main__':
             # print(price)
     # print(price)
     #         # print(price)
-    # t2 = time.time()
+    # price = calprice.calculate_price("USD", "USDT")
+    # print(price)
+
+# t2 = time.time()
     # print(t2 - t1)
     # print(price)
     # pass

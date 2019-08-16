@@ -1,8 +1,9 @@
 import random
+import time
 
 import graphene
 
-from priceserver.cal_price import calprice
+from priceserver.cal_price import CalPrice
 from priceserver.common.db_connection import ConnectRedis
 from priceserver.conf.settings import SYMBOL_LIST, CURRENCY_LIST
 from priceserver.common.logger import getLog
@@ -25,7 +26,7 @@ class Today(graphene.ObjectType):
     today = graphene.String()
 
 
-def create_symbol_obj(symbol_name, currency):
+def create_symbol_obj(symbol_name, currency, calprice):
 
     if "/" in symbol_name:
         # 看是MT/ETH这种,还是MT这种    获取这个的today 勇哥那边就不需要再查了
@@ -33,11 +34,11 @@ def create_symbol_obj(symbol_name, currency):
     else:
         today = ""
 
-    obj = Symbol(symbol_name=symbol_name, today=today, price=[create_price_obj(symbol_name, i) for i in currency])
+    obj = Symbol(symbol_name=symbol_name, today=today, price=[create_price_obj(symbol_name, i, calprice) for i in currency])
 
     return obj
 
-def create_price_obj(symbol_name, currency):
+def create_price_obj(symbol_name, currency, calprice):
 
     if "/" in symbol_name:
 
@@ -67,6 +68,19 @@ class Query(graphene.ObjectType):
     symbols = graphene.List(Symbol, symbol_name=graphene.String(), currency=graphene.String())
 
     def resolve_symbols(self, info, symbol_name=None, currency=None, **kwargs):
+
+        key_bytetrade = "price_server_bytetrade1"
+        key_huobipro = "price_server_huobipro1"
+        key_coin_base = "coinbase_currency_price1"
+
+        r = ConnectRedis()
+
+        bytetrade_price = r.hgetall(key_bytetrade)
+        huobi_price = r.hgetall(key_huobipro)
+        coinbase_price = r.hgetall(key_coin_base)
+
+        calprice = CalPrice(bytetrade_price, huobi_price, coinbase_price)
+
         if currency:
             # 传来的法币是一个字符串  用,分割
             temp = currency.split(",")
@@ -84,8 +98,10 @@ class Query(graphene.ObjectType):
             # symbol_list = MARKET_LIST
             # all 就是我们交易所目前支持的所有的币对
             # 返回所有
-
-        return [create_symbol_obj(i, currency_list)for i in symbol_list]
+        t1 = time.time()
+        res = [create_symbol_obj(i, currency_list, calprice)for i in symbol_list]
+        print(time.time() - t1)
+        return res
 
     all_price = graphene.List(Price, currency=graphene.String())
     def resolve_all_price(self, info, currency, **kwargs):
@@ -93,6 +109,7 @@ class Query(graphene.ObjectType):
 
     all_today = graphene.List(Today)
     def resolve_all_today(self, info):
+
         response = []
         res = r.hgetall("price_server_bytetrade_today1")
         for k, v in res.items():
