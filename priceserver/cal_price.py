@@ -193,16 +193,22 @@ class CalPrice(object):
             if path:
                 path = eval(path)
                 # 从缓存中获取价格
-                price = self.path_price.get([str(path)], None)
-                if price:
-                    return price
-                else:
-                    if mid:
-                        path = self.search(self.get_symbols(), mid, end)
-                        path = [start] + path
+                if self.path_price:
+                    price = self.path_price.get([str(path)], None)
+                    if price:
+                        return price
                     else:
-                        path = self.search(self.get_symbols(), start, end)
+                        if mid:
+                            path = self.search(self.get_symbols(), mid, end)
+                            path = [start] + path
+                        else:
+                            path = self.search(self.get_symbols(), start, end)
 
+                        price = self.cal_price(path)
+                        self.r.hset("price_server_path_price1", str(path), price)
+                        self.r.set("price_server_path_price_alive1", time.time())
+                        return price
+                else:
                     price = self.cal_price(path)
                     self.r.hset("price_server_path_price1", str(path), price)
                     self.r.set("price_server_path_price_alive1", time.time())
