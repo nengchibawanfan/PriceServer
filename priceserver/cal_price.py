@@ -190,6 +190,21 @@ class CalPrice(object):
 
             if path:
                 path = eval(path)
+                # 从缓存中获取价格
+                price = float(self.r.hget("price_server_path_price1", str(path)))
+                if price:
+                    pass
+                else:
+                    if mid:
+                        path = self.search(self.get_symbols(), mid, end)
+                        path = [start] + path
+                    else:
+                        path = self.search(self.get_symbols(), start, end)
+
+                    price = self.cal_price(path)
+                    self.r.hset("price_server_path_price1", str(path), price)
+                    self.r.set("price_server_path_price_alive1", time.time())
+
             else:
                 # 缓存中没有，就计算路径并加入缓存
                 if mid:
@@ -199,8 +214,11 @@ class CalPrice(object):
                     path = self.search(self.get_symbols(), start, end)
 
                 self.r.hset("price_server_path1", key, str(path))
-            print(path)
-            price = self.cal_price(path)
+                print(path)
+                price = self.cal_price(path)
+                self.r.hset("price_server_path_price1", str(path), price)
+                self.r.set("price_server_path_price_alive1", time.time())
+
             # print(price)
             return price
         #

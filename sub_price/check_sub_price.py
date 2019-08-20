@@ -16,10 +16,12 @@ while True:
     bytetrade_data = float(r.get("Receive_the_data_bytetrade1"))
     huobi_data = float(r.get("Receive_the_data_huobi1"))
     coinbase_data = float(r.get("Receive_the_data_coinbase1"))
+    price_server_path_price_alive_data = float(r.get("price_server_path_price_alive1"))
 
     bytetrade = now - bytetrade_data
     huobi = now - huobi_data
     coinbase = now - coinbase_data
+    price_server_path_price_alive = now - price_server_path_price_alive_data
 
     if bytetrade > 60 * 5:
         cmd_str = 'pm2 restart ' + "sub_bytetrade_price"
@@ -45,5 +47,13 @@ while True:
         print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
         print("重启coinbase")
+
+    if coinbase > 60 * 5:
+        cmd_str = 'pm2 restart ' + "add_path_price_catch"
+
+        result = os.system(cmd_str)
+        print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
+        print("重启缓存")
 
     time.sleep(60 * 3)
