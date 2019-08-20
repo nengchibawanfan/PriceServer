@@ -193,7 +193,7 @@ class CalPrice(object):
             if path:
                 path = eval(path)
                 # 从缓存中获取价格
-                price = self.self.path_price.get([str(path)], None)
+                price = self.path_price.get([str(path)], None)
                 if price:
                     return price
                 else:
