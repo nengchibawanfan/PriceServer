@@ -152,6 +152,7 @@ class CalPrice(object):
 
     def search(self, symbols, start, end):
 
+
         temp = []
         node_list = []
 
@@ -194,13 +195,12 @@ class CalPrice(object):
                 path = eval(path)
                 # 从缓存中获取价格
                 if self.path_price:
-                    price = self.path_price.get([str(path)], None)
-                    print(path)
-                    print(price)
-                    print("=" * 100)
-                    if price:
+                    try:
+
+                        price = float(self.path_price[str(path)])
                         return price
-                    else:
+                    except:
+
                         if mid:
                             path = self.search(self.get_symbols(), mid, end)
                             path = [start] + path
@@ -208,12 +208,12 @@ class CalPrice(object):
                             path = self.search(self.get_symbols(), start, end)
 
                         price = self.cal_price(path)
-                        self.r.hset("price_server_path_price1", str(path), price)
+                        self.r.hset("price_server_path_price1", str(path), float(price))
                         self.r.set("price_server_path_price_alive1", time.time())
                         return price
                 else:
                     price = self.cal_price(path)
-                    self.r.hset("price_server_path_price1", str(path), price)
+                    self.r.hset("price_server_path_price1", str(path), float(price))
                     self.r.set("price_server_path_price_alive1", time.time())
                     return price
 
@@ -226,7 +226,6 @@ class CalPrice(object):
                     path = self.search(self.get_symbols(), start, end)
 
                 self.r.hset("price_server_path1", key, str(path))
-                print(path)
                 price = self.cal_price(path)
                 self.r.hset("price_server_path_price1", str(path), price)
                 self.r.set("price_server_path_price_alive1", time.time())
