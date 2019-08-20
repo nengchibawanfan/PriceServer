@@ -195,6 +195,9 @@ class CalPrice(object):
                 # 从缓存中获取价格
                 if self.path_price:
                     price = self.path_price.get([str(path)], None)
+                    print(path)
+                    print(price)
+                    print("=" * 100)
                     if price:
                         return price
                     else:
