@@ -72,14 +72,16 @@ class Query(graphene.ObjectType):
         key_bytetrade = "price_server_bytetrade1"
         key_huobipro = "price_server_huobipro1"
         key_coin_base = "coinbase_currency_price1"
+        key_path_price = "price_server_path_price1"
 
         r = ConnectRedis()
 
         bytetrade_price = r.hgetall(key_bytetrade)
         huobi_price = r.hgetall(key_huobipro)
         coinbase_price = r.hgetall(key_coin_base)
+        path_price = r.hgetall(key_path_price)
 
-        calprice = CalPrice(bytetrade_price, huobi_price, coinbase_price)
+        calprice = CalPrice(bytetrade_price, huobi_price, coinbase_price, path_price)
 
         if currency:
             # 传来的法币是一个字符串  用,分割

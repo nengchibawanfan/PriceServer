@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-# Author: zhangchao
-# Date: 2019-08-20
-# Desc:
-
-import time
-
-import requests
 
 # -*- coding: utf-8 -*-
 # Author: zhangchao
@@ -17,9 +9,9 @@ import time
 
 import requests
 
+sys.path.append("..")
 from priceserver.common.db_connection import ConnectRedis
 
-sys.path.append("../..")
 
 
 r = ConnectRedis()
@@ -53,4 +45,3 @@ if __name__ == '__main__':
         # try:
         schedule.run_pending()
         time.sleep(60)
-

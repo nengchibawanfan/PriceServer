@@ -66,12 +66,14 @@ def set_node_map(node_map, node, node_list, path_map):
 
 
 class CalPrice(object):
-    def __init__(self, bytetrade_price, huobi_price, coinbase_price):
+    def __init__(self, bytetrade_price, huobi_price, coinbase_price, path_price):
         # 初始化图
         self.r = ConnectRedis()
         self.bytetrade_price = bytetrade_price
         self.huobi_price = huobi_price
         self.coinbase_price = coinbase_price
+        self.path_price = path_price
+
 
     def get_symbols(self):
         """
@@ -191,7 +193,7 @@ class CalPrice(object):
             if path:
                 path = eval(path)
                 # 从缓存中获取价格
-                price = float(self.r.hget("price_server_path_price1", str(path)))
+                price = self.self.path_price.get([str(path)], None)
                 if price:
                     return price
                 else:
