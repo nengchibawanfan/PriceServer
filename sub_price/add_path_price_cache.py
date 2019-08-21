@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 # Author: zhangchao
 # Date: 2019-08-15
@@ -17,7 +16,7 @@ from priceserver.common.db_connection import ConnectRedis
 r = ConnectRedis()
 
 def job():
-    url = "http://3.92.180.68:5005/graphql?"
+    url = "http://127.0.0.1:5005/graphql?"
     params = {
         "query": """query{
       symbols{
@@ -30,18 +29,23 @@ def job():
       }
     }"""
     }
-    requests.post(url, params).content.decode("utf8")
+    response = eval(requests.post(url, params).content.decode("utf8"))
+    # print(response["data"]["symbols"])
+    data = str(response["data"]["symbols"])
+    print(response)
+    r.set("price_cache", data)
 
 
 
 if __name__ == '__main__':
 
-    import schedule
+    # import schedule
+    job()
 
 
-    schedule.every(5).minutes.do(job)
-
-    while True:
-        # try:
-        schedule.run_pending()
-        time.sleep(60)
+    # schedule.every(5).minutes.do(job)
+    #
+    # while True:
+    #     # try:
+    #     schedule.run_pending()
+    #     time.sleep(60)

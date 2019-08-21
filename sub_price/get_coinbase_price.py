@@ -9,14 +9,14 @@ sys.path.append("..")
 import time
 
 import requests
-import schedule
+# import schedule
 
 # from retry import retry
 from multiprocessing.dummy import Pool
 
 from priceserver.common.logger import getLog
 from priceserver.common.db_connection import ConnectRedis
-from priceserver.conf.settings import HUOBIPRO_API, COIN_BASE_URL, BYTETRADE_API, COIN_CURRENCY, CURRENCY_LIST
+from priceserver.conf.settings import COIN_BASE_URL, COIN_CURRENCY, CURRENCY_LIST
 
 moneyLst = CURRENCY_LIST  # 法币的种类
 logger = getLog()
@@ -49,6 +49,7 @@ class Quote(object):
     def updateQuote(self, base):
         # 所有的法币名称
         response = eval(self.sendRequest(base))
+        print(response)
         for symbol in response["data"]:
             if symbol["base"] in COIN_CURRENCY:
                 k = symbol["base"] + "/" + symbol["currency"]
@@ -67,7 +68,7 @@ class Quote(object):
         for base in moneyLst:
             # 所有的法币名称
             self.pool.apply_async(self.updateQuote, (base,))
-
+            # self.updateQuote(base)
 
 if __name__ == '__main__':
     # 开始的时候将原来的键删掉，构建新的  一旦加了新的交易对，重启程序
@@ -76,6 +77,7 @@ if __name__ == '__main__':
     r = ConnectRedis()
 
     obj = Quote()
+    # obj.start()  # 维护法币的价格
 
 
     while True:

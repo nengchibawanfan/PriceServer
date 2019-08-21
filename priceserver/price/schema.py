@@ -1,3 +1,4 @@
+import json
 import random
 import time
 
@@ -105,9 +106,11 @@ class Query(graphene.ObjectType):
         print(time.time() - t1)
         return res
 
-    all_price = graphene.List(Price, currency=graphene.String())
-    def resolve_all_price(self, info, currency, **kwargs):
-        pass
+    all_price = graphene.String()
+    def resolve_all_price(self, info, **kwargs):
+        res = r.get("price_cache")
+
+        return res
 
     all_today = graphene.List(Today)
     def resolve_all_today(self, info):
