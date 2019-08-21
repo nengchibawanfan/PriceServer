@@ -37,4 +37,4 @@ if __name__ == '__main__':
     # 在这里加一个启动短信提醒
 
     # app.wsgi_app = ProxyFix(app.wsgi_app)
-    app.run(host="0.0.0.0", port="5005", debug=False, threaded=True)
+    app.run(host="0.0.0.0", port="5000", debug=False, threaded=True)

@@ -112,6 +112,12 @@ class Query(graphene.ObjectType):
 
         return res
 
+    all_market_price = graphene.String()
+    def resolve_all_market_price(self, info, **kwargs):
+        res = r.get("price_market_cache")
+
+        return res
+
     all_today = graphene.List(Today)
     def resolve_all_today(self, info):
 
@@ -121,6 +127,8 @@ class Query(graphene.ObjectType):
             obj = Today(symbol_name=k, today=v)
             response.append(obj)
         return response
+
+
 
 if __name__ == '__main__':
     pass

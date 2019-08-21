@@ -15,7 +15,7 @@ def get_symbol_list():
     }
     res = eval(requests.get(BYTETRADE_API, params).content.decode("utf-8"))
     # marketNames = [i["name"] for i in res["symbols"] if i["money"] and i["stock"] != "BTT"]  # "CMT/KCASH"
-    marketNames = [i["name"] for i in res["result"]]  # "CMT/KCASH"
+    marketNames = [i["name"] for i in res["result"] if i["name"][-3:] not in ["btt", "BTT"]]  # "CMT/KCASH"
     symbolNames = []  # "CMT/KCASH"
     for market in marketNames:
         stock, money = market.split("/")
@@ -78,4 +78,6 @@ PRIORITY = ["ETH", "BTC"]
 
 
 if __name__ == '__main__':
-    print(SYMBOL_LIST)
+    print(MARKET_LIST)
+
+    # print(SYMBOL_LIST)
