@@ -39,13 +39,13 @@ def job():
 
 if __name__ == '__main__':
 
-    # import schedule
+    import schedule
     job()
 
 
-    # schedule.every(5).minutes.do(job)
-    #
-    # while True:
-    #     # try:
-    #     schedule.run_pending()
-    #     time.sleep(60)
+    schedule.every(1).minutes.do(job)
+
+    while True:
+        # try:
+        schedule.run_pending()
+        time.sleep(60)
