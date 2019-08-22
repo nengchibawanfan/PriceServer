@@ -199,12 +199,12 @@ class CalPrice(object):
                 #         price = float(self.path_price[str(path)])
                 #         return price
                 #     except:
-
-                if mid:
-                    path = self.search(self.get_symbols(), mid, end)
-                    path = [start] + path
-                else:
-                    path = self.search(self.get_symbols(), start, end)
+                #
+                # if mid:
+                #     path = self.search(self.get_symbols(), mid, end)
+                #     path = [start] + path
+                # else:
+                #     path = self.search(self.get_symbols(), start, end)
 
                 price = self.cal_price(path)
                 # self.r.hset("price_server_path_price1", str(path), float(price))
