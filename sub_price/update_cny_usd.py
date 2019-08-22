@@ -40,8 +40,8 @@ def job():
     }"""
     }
     response = eval(requests.post(url, params).content.decode("utf8"))
-    # print(response["data"]["symbols"])
     data = eval(str(response["data"]["symbols"]))
+    print("response")
     temp = {}
     for i in data:
         temp[i["symbolName"]] = {}
@@ -50,7 +50,7 @@ def job():
 
 
     res = eval(r.get("price_cache"))
-    print(res)
+    print("redis data")
 
 
     temp_lst = []
@@ -62,13 +62,19 @@ def job():
         for j in i["price"]:
             if j["currency"] == "CNY":
                 j["price"] = CNY
+                print(j["price"])
+                print(CNY)
             elif j["currency"] == "USD":
                 j["price"] = USD
+                print(j["price"])
+                print(USD)
             else:
                 pass
         temp_lst.append(i)
 
     r.set("price_cache", str(temp_lst))
+
+    print("资产完成")
 
     # #
 
@@ -83,6 +89,7 @@ def job():
     }
     response = eval(requests.post(url, params).content.decode("utf8"))
     data = eval(str(response["data"]["symbols"]))
+    print("response")
     temp = {}
     for i in data:
         temp[i["symbolName"]] = {}
@@ -90,6 +97,7 @@ def job():
             temp[i["symbolName"]][j["currency"]] = j["price"]
 
     res = eval(r.get("price_market_cache"))
+    print("redis  data")
 
 
     temp_lst = []
@@ -100,14 +108,20 @@ def job():
         USD = temp[symbolName]["USD"]
         for j in i["price"]:
             if j["currency"] == "CNY":
+                print(j["price"])
+                print(CNY)
                 j["price"] = CNY
             elif j["currency"] == "USD":
+                print(j["price"])
+                print(USD)
                 j["price"] = USD
             else:
                 pass
         temp_lst.append(i)
 
     r.set("price_market_cache", str(temp_lst))
+
+    print("市场完成")
 
 
 
