@@ -66,13 +66,12 @@ def set_node_map(node_map, node, node_list, path_map):
 
 
 class CalPrice(object):
-    def __init__(self, bytetrade_price, huobi_price, coinbase_price, path_price):
+    def __init__(self, bytetrade_price, huobi_price, coinbase_price):
         # 初始化图
         self.r = ConnectRedis()
         self.bytetrade_price = bytetrade_price
         self.huobi_price = huobi_price
         self.coinbase_price = coinbase_price
-        self.path_price = path_price
 
 
     def get_symbols(self):
@@ -194,28 +193,28 @@ class CalPrice(object):
             if path:
                 path = eval(path)
                 # 从缓存中获取价格
-                if self.path_price:
-                    try:
+                # if self.path_price:
+                #     try:
+                #
+                #         price = float(self.path_price[str(path)])
+                #         return price
+                #     except:
 
-                        price = float(self.path_price[str(path)])
-                        return price
-                    except:
-
-                        if mid:
-                            path = self.search(self.get_symbols(), mid, end)
-                            path = [start] + path
-                        else:
-                            path = self.search(self.get_symbols(), start, end)
-
-                        price = self.cal_price(path)
-                        self.r.hset("price_server_path_price1", str(path), float(price))
-                        self.r.set("price_server_path_price_alive1", time.time())
-                        return price
+                if mid:
+                    path = self.search(self.get_symbols(), mid, end)
+                    path = [start] + path
                 else:
-                    price = self.cal_price(path)
-                    self.r.hset("price_server_path_price1", str(path), float(price))
-                    self.r.set("price_server_path_price_alive1", time.time())
-                    return price
+                    path = self.search(self.get_symbols(), start, end)
+
+                price = self.cal_price(path)
+                # self.r.hset("price_server_path_price1", str(path), float(price))
+                # self.r.set("price_server_path_price_alive1", time.time())
+                return price
+                # else:
+                #     price = self.cal_price(path)
+                #     self.r.hset("price_server_path_price1", str(path), float(price))
+                #     self.r.set("price_server_path_price_alive1", time.time())
+                #     return price
 
             else:
                 # 缓存中没有，就计算路径并加入缓存
@@ -227,8 +226,8 @@ class CalPrice(object):
 
                 self.r.hset("price_server_path1", key, str(path))
                 price = self.cal_price(path)
-                self.r.hset("price_server_path_price1", str(path), price)
-                self.r.set("price_server_path_price_alive1", time.time())
+                # self.r.hset("price_server_path_price1", str(path), price)
+                # self.r.set("price_server_path_price_alive1", time.time())
 
                 return price
         #
