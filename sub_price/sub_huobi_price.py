@@ -9,21 +9,25 @@ sys.path.append("..")
 import time
 import ccxt
 
-import redis
 import requests
 
 from wssExchange import huobipro
 from priceserver.common.logger import getLog
 from priceserver.common.db_connection import ConnectRedis
-from priceserver.conf.settings import HUOBIPRO_API, BYTETRADE_API
+from priceserver.conf.settings import configs
+from priceserver.common.tools import get_market_name_num_mapping
 
+BYTETRADE_API = configs["exchange"]["bytetrade"]["restful_url"]
+HUOBIPRO_API = configs["exchange"]["huobi"]["api_url"]
 logger = getLog()
+MARKET_NAME_NUM_MAPPING = get_market_name_num_mapping()
+PAIRS = configs["pairs"]
 
 
 class Quote(object):
 
     def __init__(self):
-        self.r = redis.StrictRedis(decode_responses=True)
+        self.r = ConnectRedis()
         self.hb = huobipro()
         # 获取交易界面上的交易对，
         # 接口返回信息
@@ -45,11 +49,16 @@ class Quote(object):
 
         return huobi_symbols
 
-
     def onDeal_huobipro(self, symbol, data):
+        print(symbol)
         print(data)
         # 将收到的symbol计算成 ccxtsymbol
         self.r.set("Receive_the_data_huobi1", time.time())
+        if MARKET_NAME_NUM_MAPPING[symbol] in PAIRS.keys() and PAIRS[MARKET_NAME_NUM_MAPPING[symbol]][
+            "mode"] == "refSelf":
+            pass
+        else:
+            self.r.hset("next_price", MARKET_NAME_NUM_MAPPING[symbol], data[0]["info"]["price"])
 
         # self.r.publish("price_server_" + "huobipro_" + str(symbol), data[0]["info"]["price"])
         self.r.hset("price_server_huobipro1", symbol, data[0]["info"]["price"])

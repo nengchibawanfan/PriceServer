@@ -1,83 +1,31 @@
-from priceserver.common.db_connection import ConnectRedis
+import os
+import re
+import json
 
-HUOBIPRO_API = "https://api.huobi.pro/"
-BYTETRADE_API = "https://api.bytetrade.io/bittrade/v1/me"
-BYTETRADE_TEST_API = "https://c2.bytetrade.io/bittrade/v1/me"
-COIN_BASE_URL = "https://api.coinbase.com/"
-PUSH_BEAR_KEY = "11970-ba5f3d1644a4bd880a04ebdef3560f69"
+_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def get_symbol_list():
-    import requests
-    params = {
-        "cmd": "marketsPrice",
-        "channel": "all"
-    }
-    res = eval(requests.get(BYTETRADE_API, params).content.decode("utf-8"))
-    # marketNames = [i["name"] for i in res["symbols"] if i["money"] and i["stock"] != "BTT"]  # "CMT/KCASH"
-    marketNames = [i["name"] for i in res["result"] if i["name"][-3:] not in ["btt", "BTT"]]  # "CMT/KCASH"
-    symbolNames = []  # "CMT/KCASH"
-    for market in marketNames:
-        stock, money = market.split("/")
-        symbolNames.append(stock)
-        symbolNames.append(money)
+def _read_setting() -> dict:
+    filepath = os.path.join(_DIR, 'settings.json')
+
+    if os.path.isfile(filepath):
+        print('load settings', filepath)
+        with open(filepath, 'r', encoding='utf-8') as fs:
+            return parse_json(fs.read())
+
+    return None
+
+def parse_json(json_str):
+    # 处理// ... /n 格式非json内容
+    json_str1 = re.sub(re.compile('(//\s[\\s\\S]*?\n)'), '', json_str)
+    # # 处理/*** ... */ 格式非json内容
+    json_str2 = re.sub(re.compile('(/\*\*\*[\\s\\S]*?/)'), '', json_str1)
+
+    # 返回json格式的数据
+    return json.loads(json_str2)
 
 
-    # url = HUOBIPRO_API + "v1/common/symbols"
-    # res = eval(requests.get(url).content.decode("utf-8"))
-    # huobi_symbols = set([i["base-currency"].upper() + "/" + i["quote-currency"].upper() for i in res["data"]])
-    bytetrade_markets = set(marketNames)
-    bytetrade_symbols = set(symbolNames)
-    # commen_symbol = huobi_symbols & bytetrade_symbol
-
-    return list(bytetrade_markets), list(bytetrade_symbols)
-
-
-# redis
-REDIS_HOST = '127.0.0.1'
-REDIS_PORT = 6379
-
-MARKET_LIST, SYMBOL_LIST = get_symbol_list()
-# 默认的交易对的列表，就是 我们交易所支持的所有的币对
-
-EXCHANGE_LIST = ["huobipro", "bytetrade"]
-# 支持的交易所
-
-CURRENCY_LIST = ["CNY",     # 人民币
-                 "TWD",     # 新台币
-                 "BRL",     # 巴西雷亚尔
-                 "CHF",     # 法国法郎
-                 "TRY",     # 土耳其里拉
-                 "PLN",     # 波兰 兹罗提
-                 "UAH",     # 乌克兰 格里夫纳
-                 "VND",     # 越南盾
-                 "IDR",     # 印尼卢比
-                 "INR",     # 印度卢比
-                 "USD",     # 美元
-                 "GBP",     # 英镑
-                 "SGD",     # 新加坡
-                 "HKD",     # 港币
-                 "JPY",     # 日元
-                 "CAD",     # 加拿大
-                 "AUD",     # 澳大利亚
-                 "EUR",     # 欧元
-                 "THB",     # 泰铢
-                 "NZD",     # 新西兰
-                 "KRW",     # 韩元
-                 "RUB",     # 俄罗斯卢布
-                 "MYR"      # 马来西亚林吉特
-                ]
-
-
-
-COIN_CURRENCY = ["BTC", "ETH"]
-# 保存的兑法币价格的币种   在订阅中的设置
-
-PRIORITY = ["ETH", "BTC"]
-# 优先级
-
+configs = _read_setting()
 
 if __name__ == '__main__':
-    print(MARKET_LIST)
-
-    # print(SYMBOL_LIST)
+    print(configs)

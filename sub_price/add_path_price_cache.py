@@ -8,11 +8,11 @@ import time
 
 import requests
 
-
 sys.path.append("..")
-from priceserver.conf.settings import MARKET_LIST
 from priceserver.common.db_connection import ConnectRedis
+from priceserver.common.tools import get_all_markets_name
 
+MARKET_LIST = get_all_markets_name()
 
 market_list = ""
 
@@ -20,10 +20,8 @@ for i in MARKET_LIST:
     market_list += i
     market_list += ","
 
-
-
-
 r = ConnectRedis()
+
 
 def job():
     url = "http://127.0.0.1:5000/graphql?"
@@ -58,11 +56,10 @@ def job():
     r.set("price_market_cache", data)
 
 
-
-
 if __name__ == '__main__':
 
     import schedule
+
     # job()
     #
 

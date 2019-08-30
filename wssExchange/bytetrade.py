@@ -375,10 +375,10 @@ if __name__ == '__main__':
     #     wss.create_order('3/2','limit','buy',10000,0.0001)
     #     time.sleep(5)
     wss.start()
-    wss.subscribeBalance([i for i in range(0,50)], onDepth)
-    wss.subscribeOrders('18/2',onTicker)
-    while True:
-        pass
+    # wss.subscribeBalance([i for i in range(0,50)], onDepth)
+    # wss.subscribeOrders('18/2',onTicker)
+    # while True:
+    #     pass
     # print(wss.fetch_order_book('BTC/LRT'))
     # wss.subscribeBalance(1,onDepth)
     # while True:
@@ -386,7 +386,7 @@ if __name__ == '__main__':
     # print(wss.fetch_balance())
     # print(wss.fetch_balance({'symbol':'LRT'}))
     # wss.subscribeDeals('34/2', onDepth)
-    # wss.subscribeTicker('34/2', onTicker)
+    wss.subscribeDeals('3/2', onTicker)
     # wss.subscribeDeals('3/2',onDepth)
     # wss.subscribeOrders('3/2', onDepth)
     # wss.subscribeBalance([1, 3], onDepth)
