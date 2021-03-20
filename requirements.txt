@@ -21,7 +21,7 @@ graphql-server-core==1.1.1
 greenlet==0.4.15
 idna==2.8
 itsdangerous==1.1.0
-Jinja2==2.10
+Jinja2==2.11.3
 locust==0.0
 locustio==0.11.0
 MarkupSafe==1.1.1
