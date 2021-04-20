@@ -28,7 +28,7 @@ MarkupSafe==1.1.1
 msgpack==0.6.1
 multidict==4.5.2
 promise==2.2.1
-py==1.8.0
+py==1.10.0
 pycares==3.0.0
 pycparser==2.19
 python-dateutil==2.8.0
